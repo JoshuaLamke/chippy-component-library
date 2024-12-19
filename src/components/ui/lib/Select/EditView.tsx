@@ -14,7 +14,7 @@ import {
   FieldValues,
   UseFormReturn,
 } from "react-hook-form";
-import { createListCollection } from "@chakra-ui/react";
+import { Box, createListCollection, Input } from "@chakra-ui/react";
 import { SelectOption } from "./types";
 import { useMemo, useState } from "react";
 import { SelectFieldProps } from "./Field";
@@ -61,7 +61,7 @@ interface CreateSearchOptionsInputProps<
   OptionValueName extends string = "value",
   OptionLabelName extends string = "label"
 > {
-  createable: boolean;
+  createable: boolean | undefined;
   searchable: boolean;
   searchTerm: string;
   setSearchTerm: (value: string) => void;
@@ -85,28 +85,37 @@ export const CreateSearchOptionsInput = <
   onAddOptionChange,
 }: CreateSearchOptionsInputProps<OptionValueName, OptionLabelName>) => {
   return (
-    <div className="sticky top-0 bg-white z-10 pt-1">
+    <Box
+      zIndex={10}
+      top={0}
+      background={"white"}
+      paddingTop={"1"}
+      position={"sticky"}
+    >
       {(searchable || createable) && (
-        <input
-          type="text"
-          className="w-full p-2 border rounded-md border-gray-400 focus:outline-none focus:border-gray-700"
-          placeholder={`Type to ${createable ? "add" : ""}${
-            createable && searchable ? " or " : ""
-          }${searchable ? "search options..." : ""}`}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            if (createable && e.key === "Enter" && e.currentTarget.value) {
-              const newOption = handleAddOption(e.currentTarget.value);
-              onAddOptionChange(newOption);
-              e.currentTarget.value = "";
-              setSearchTerm("");
-            }
-          }}
-        />
+        <Field invalid={false}>
+          <Input
+            type="text"
+            width={"full"}
+            paddingLeft={"2"}
+            placeholder={`Type to ${createable ? "add" : ""}${
+              createable && searchable ? " or " : ""
+            }${searchable ? "search options..." : ""}`}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (createable && e.key === "Enter" && e.currentTarget.value) {
+                const newOption = handleAddOption(e.currentTarget.value);
+                onAddOptionChange(newOption);
+                e.currentTarget.value = "";
+                setSearchTerm("");
+              }
+            }}
+          />
+        </Field>
       )}
-    </div>
+    </Box>
   );
 };
 
@@ -114,7 +123,10 @@ export interface SelectEditViewProps<
   FormKeyNames extends string = string,
   OptionValueName extends string = "value",
   OptionLabelName extends string = "label"
-> extends SelectFieldProps<FormKeyNames, OptionValueName, OptionLabelName> {
+> extends Omit<
+    SelectFieldProps<FormKeyNames, OptionValueName, OptionLabelName>,
+    "EditView" | "ReadView" | "state" | "noValueMessage"
+  > {
   formMethods: UseFormReturn<any>;
 }
 
@@ -126,16 +138,16 @@ const SelectEditView = <
   label,
   name,
   isMulti,
-  placeholder = "",
+  placeholder,
   options,
   clearable,
   size,
   onChange,
   onBlur,
   formMethods,
-  required = false,
-  createable = false,
-  searchable = true,
+  required,
+  createable,
+  searchable = options.length > 10,
   optionLabelName,
   optionValueName,
   helperText,
@@ -223,6 +235,7 @@ const SelectEditView = <
         name={name}
         render={({ field }) => (
           <SelectRoot
+            composite={searchable || createable}
             data-testid={"selectRoot"}
             multiple={isMulti}
             name={field.name}
@@ -233,13 +246,10 @@ const SelectEditView = <
               onChange?.(formattedValue);
               return field.onChange(formattedValue);
             }}
-            onInteractOutside={
-              /* istanbul ignore next */
-              () => {
-                onBlur?.();
-                field.onBlur();
-              }
-            }
+            onInteractOutside={() => {
+              onBlur?.();
+              field.onBlur();
+            }}
             onOpenChange={({ open }) => {
               // Clear search on close
               if (!open) {
@@ -249,7 +259,6 @@ const SelectEditView = <
             collection={collection}
             size={size}
             closeOnSelect={!isMulti}
-            className="border rounded-md"
             tabIndex={-1}
             {...props}
           >

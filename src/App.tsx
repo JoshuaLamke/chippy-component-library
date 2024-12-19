@@ -2,21 +2,28 @@ import { FormProvider, useForm } from "react-hook-form";
 import SelectField from "./components/ui/lib/Select/Field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Grid, GridItem } from "@chakra-ui/react";
+import { Box, Button, Grid, GridItem } from "@chakra-ui/react";
+import TextInputField from "./components/ui/lib/TextInput/Field";
+import NumberInputField from "./components/ui/lib/NumberInput/Field";
+import MaskedTextInputField from "./components/ui/lib/MaskedTextInput/Field";
 
-const errorMessage = { message: "Must add at least one option" };
+const selectErrorMessage = { message: "Must add at least one option" };
+const textErrorMessage = { message: "Must add text." };
 const formSchema = z.object({
   framework: z
     .object(
       {
-        label: z.string(),
-        value: z.string(),
+        name: z.string(),
+        id: z.string(),
       },
-      errorMessage
+      selectErrorMessage
     )
     .passthrough()
     .array()
-    .min(1, errorMessage),
+    .min(1, selectErrorMessage),
+  text: z.string().min(1, textErrorMessage),
+  number: z.number(),
+  maskText: z.string().length(9),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -25,17 +32,40 @@ function App() {
   const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      framework: undefined,
+      framework: [
+        { name: "React", id: "react", val2: "1" },
+        { name: "Vue", id: "vue", val2: "2" },
+      ],
+      text: "default",
+      number: 123,
+      maskText: "123456789",
     },
   });
 
   return (
-    <div className="flex justify-center w-screen h-screen mt-3">
+    <Box
+      display={"flex"}
+      justifyContent={"center"}
+      flexDirection={"column"}
+      width={"svw"}
+      height={"svh"}
+      marginTop={"3"}
+    >
       <FormProvider {...methods}>
-        <form className="w-full">
-          <Grid templateColumns="repeat(4, 1fr)" className="w-full">
-            <GridItem colSpan={1}></GridItem>
-            <GridItem colSpan={2} className="flex">
+        <form
+          noValidate
+          onSubmit={methods.handleSubmit(
+            (data) => console.log(data),
+            (error) => console.log(error)
+          )}
+        >
+          <Grid
+            templateColumns="repeat(4, 1fr)"
+            gap={"2"}
+            width={"svw"}
+            paddingX={"5"}
+          >
+            <GridItem colSpan={1} className="flex">
               <SelectField<keyof FormValues, "id", "name">
                 name="framework"
                 optionLabelName="name"
@@ -59,28 +89,85 @@ function App() {
                 createable={true}
                 searchable={true}
                 clearable={true}
-                isMulti={false}
+                isMulti={true}
                 onChange={(v) => console.log(v)}
                 onBlur={() => console.log("blur")}
                 state="edit"
                 required={false}
               />
             </GridItem>
-            <GridItem colSpan={1}></GridItem>
-            <GridItem colSpan={4} className="flex justify-center">
-              <button
-                type="submit"
-                onClick={methods.handleSubmit((values) => {
-                  console.log(values);
-                })}
-              >
+            <GridItem colSpan={1}>
+              <TextInputField
+                name="text"
+                label={"Text"}
+                placeholder="Enter text..."
+                onChange={(v) => console.log(v)}
+                onBlur={() => console.log("blur")}
+                state="edit"
+                required={true}
+                helperText="This is helper text"
+              />
+            </GridItem>
+            <GridItem colSpan={1}>
+              <NumberInputField
+                name="number"
+                label={"Number"}
+                placeholder="Enter number..."
+                onChange={(v) => console.log(v)}
+                onBlur={() => console.log("blur")}
+                state="edit"
+                required={true}
+                helperText="This is helper text"
+              />
+            </GridItem>
+            <GridItem colSpan={1}>
+              <MaskedTextInputField
+                name="maskText"
+                label={"Mask Text"}
+                maskPlaceholder="___-__-____"
+                maskSlotChar="_"
+                formatFromDisplayValue={(val) => val.replace(/[_-]/g, "")}
+                formatToDisplayValue={(
+                  storedValue,
+                  maskPlaceholder,
+                  maskSlotChar
+                ) => {
+                  let storedValueCharIdx = 0;
+                  const displayValueArr = maskPlaceholder.split("");
+                  for (let i = 0; i < displayValueArr.length; i++) {
+                    if (storedValueCharIdx >= storedValue.length) {
+                      break;
+                    }
+                    if (displayValueArr[i] !== maskSlotChar) {
+                      continue;
+                    }
+                    displayValueArr[i] = storedValue[storedValueCharIdx];
+                    storedValueCharIdx++;
+                  }
+                  const displayValue = displayValueArr.join("");
+                  return displayValue;
+                }}
+                onChange={(v) => console.log(v)}
+                onBlur={() => console.log("blur")}
+                state="edit"
+                required={true}
+                helperText="This is helper text"
+              />
+            </GridItem>
+            <GridItem
+              colSpan={4}
+              display={"flex"}
+              justifyContent={"center"}
+              marginTop={"5"}
+            >
+              <Button variant={"outline"} type="submit">
                 Submit
-              </button>
+              </Button>
             </GridItem>
           </Grid>
         </form>
       </FormProvider>
-    </div>
+    </Box>
   );
 }
 

@@ -4,6 +4,7 @@ import { TooltipProps } from "../../tooltip";
 import { DefaultTipIconProps } from "../Tooltip/DefaultTipIcon";
 import SelectReadView, { SelectReadViewProps } from "./ReadView";
 import SelectEditView, { SelectEditViewProps } from "./EditView";
+import { omit } from "@/components/ui/lib/utils";
 
 export interface SelectFieldProps<
   FormKeyNames extends string = string,
@@ -16,7 +17,7 @@ export interface SelectFieldProps<
   placeholder?: string;
   options: SelectOption<OptionValueName, OptionLabelName>[];
   clearable?: boolean;
-  size?: "sm" | "md" | "lg" | "xs";
+  size?: "xs" | "sm" | "md" | "lg";
   onChange?: (
     val:
       | SelectOption<OptionValueName, OptionLabelName>[]
@@ -45,6 +46,7 @@ export interface SelectFieldProps<
   EditView?: React.FunctionComponent<
     SelectEditViewProps<FormKeyNames, OptionValueName, OptionLabelName>
   >;
+  noValueMessage?: string;
 }
 
 const SelectField = <
@@ -57,15 +59,20 @@ const SelectField = <
   const { ReadView, EditView } = props;
   const formMethods = useFormContext();
 
-  const readViewProps = {
+  const readViewProps: SelectReadViewProps<OptionValueName, OptionLabelName> = {
     selectValue: formMethods.getValues(props.name),
     optionValueName: props.optionValueName,
     optionLabelName: props.optionLabelName,
     label: props.label,
+    noValueMessage: props.noValueMessage,
   };
 
-  const editViewProps = {
-    ...props,
+  const editViewProps: SelectEditViewProps<
+    FormKeyNames,
+    OptionValueName,
+    OptionLabelName
+  > = {
+    ...omit(props, ["EditView", "ReadView", "state"]),
     formMethods,
   };
 

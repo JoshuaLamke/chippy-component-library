@@ -1,6 +1,6 @@
 import { SelectOption } from "./types";
 import { Field } from "../../field";
-import { Badge } from "@chakra-ui/react";
+import { Badge, Box } from "@chakra-ui/react";
 
 export interface SelectReadViewProps<
   OptionValueName extends string = "value",
@@ -12,6 +12,7 @@ export interface SelectReadViewProps<
   label?: React.ReactNode;
   optionValueName: OptionValueName;
   optionLabelName: OptionLabelName;
+  noValueMessage?: string;
 }
 
 const SelectReadView = <
@@ -22,12 +23,13 @@ const SelectReadView = <
   label,
   optionValueName,
   optionLabelName,
+  noValueMessage,
 }: SelectReadViewProps<OptionValueName, OptionLabelName>) => {
   const isMultiSelect = Array.isArray(selectValue);
   if (!selectValue || (isMultiSelect && !selectValue.length)) {
     return (
       <Field label={label}>
-        <div className="text-gray-600">None Selected</div>
+        <Box>{noValueMessage || "None Selected"}</Box>
       </Field>
     );
   }
@@ -36,23 +38,29 @@ const SelectReadView = <
   if (isMultiSelect) {
     return (
       <Field label={label}>
-        <div className="flex flex-wrap">
+        <Box display={"flex"} flexWrap={"wrap"}>
           {selectValue.map((option) => (
             <Badge
-              className="m-1 px-2 py-1 text-xs text-gray-700 bg-gray-200 rounded-full"
+              fontSize={"xs"}
+              color={"gray.700"}
+              background={"gray.200"}
+              paddingX={"2"}
+              paddingY={"1"}
+              margin={"1"}
+              rounded={"full"}
               key={option[optionValueName]}
             >
               {option[optionLabelName]}
             </Badge>
           ))}
-        </div>
+        </Box>
       </Field>
     );
   }
 
   return (
     <Field label={label}>
-      <div>{selectValue[optionLabelName]}</div>
+      <Box>{selectValue[optionLabelName]}</Box>
     </Field>
   );
 };

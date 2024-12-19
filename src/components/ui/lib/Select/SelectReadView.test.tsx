@@ -65,4 +65,28 @@ describe("Select/ReadView", () => {
     );
     expect(screen.getByText("None Selected")).toBeInTheDocument();
   });
+
+  it("SelectField should render no value message for empty single select or multiSelect", () => {
+    const { rerender } = render(
+      <Provider>
+        <SelectReadViewWrapper
+          {...selectFieldProps}
+          selectValue={[]}
+          noValueMessage="Nothing here"
+        />
+      </Provider>
+    );
+    expect(screen.getByText("Nothing here")).toBeInTheDocument();
+
+    rerender(
+      <Provider>
+        <SelectReadViewWrapper
+          {...selectFieldProps}
+          selectValue={undefined as any}
+          noValueMessage="Nothing here"
+        />
+      </Provider>
+    );
+    expect(screen.getByText("Nothing here")).toBeInTheDocument();
+  });
 });

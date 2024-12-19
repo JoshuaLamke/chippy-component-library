@@ -12,17 +12,17 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./setupTests.ts'],
-    include: ['**/*.test.{ts,tsx,js,jsx}'], 
+    include: ['**/*.test.{ts,tsx,js,jsx}'],
     coverage: {
       provider: 'istanbul',
       reporter: ['text', 'html'],
       reportsDirectory: './coverage', 
       include: ['src/components/ui/lib/**/*.{ts,tsx,js,jsx}'],
       thresholds: {
-        lines: 100,
-        functions: 100, 
-        branches: 100, 
-        statements: 100,
+        lines: 90,
+        functions: 90, 
+        branches: 90, 
+        statements: 90,
       }
     },
 

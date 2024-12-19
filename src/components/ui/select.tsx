@@ -1,7 +1,7 @@
 "use client";
 
 import type { CollectionItem } from "@chakra-ui/react";
-import { Badge, Select as ChakraSelect, Portal } from "@chakra-ui/react";
+import { Badge, Select as ChakraSelect, Portal, Box } from "@chakra-ui/react";
 import { CloseButton } from "./close-button";
 import { forwardRef } from "react";
 
@@ -82,18 +82,27 @@ export const SelectValueText = forwardRef<
 >(function SelectValueText(props, ref) {
   const { children, ...rest } = props;
   return (
-    <ChakraSelect.ValueText {...rest} ref={ref} className="flex flex-wrap">
+    <ChakraSelect.ValueText
+      {...rest}
+      ref={ref}
+      display={"flex"}
+      flexWrap={"wrap"}
+    >
       <ChakraSelect.Context>
         {(select) => {
           const items = select.selectedItems;
           if (items.length === 0)
-            return <span className="ms-1">{props.placeholder}</span>;
+            return (
+              <Box as={"span"} marginStart={"1"}>
+                {props.placeholder}
+              </Box>
+            );
           if (children) return children(items);
           if (items.length === 1)
             return (
-              <span className="ms-1">
+              <Box as={"span"} marginStart={"1"}>
                 {select.collection.stringifyItem(items[0])}
-              </span>
+              </Box>
             );
           const handleRemoveItem = (item: unknown) => {
             const newValue = items
@@ -107,7 +116,8 @@ export const SelectValueText = forwardRef<
           };
           return items.map((item) => (
             <Badge
-              className="m-1 ps-4"
+              margin={"1"}
+              paddingStart={"4"}
               key={JSON.stringify(item)}
               display="flex"
               alignItems="center"

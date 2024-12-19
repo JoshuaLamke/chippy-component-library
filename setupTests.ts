@@ -1,5 +1,8 @@
 import '@testing-library/jest-dom/vitest';
-import { vi, describe, expect, it } from 'vitest';
+import { vi } from 'vitest';
+
+const mockRequestAnimationFrame = vi.fn((callback) => callback()); 
+vi.stubGlobal('requestAnimationFrame', mockRequestAnimationFrame);
 
 // Silence css not parsed error for tests
 const originalError = console.error;
