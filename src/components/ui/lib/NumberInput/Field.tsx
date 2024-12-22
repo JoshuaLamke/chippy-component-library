@@ -10,7 +10,7 @@ export interface NumberInputFieldProps<FormKeyNames extends string = string> {
   name: FormKeyNames;
   placeholder?: string;
   size?: "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
-  onChange?: (val?: number) => void;
+  onChange?: (val: number) => void;
   onBlur?: () => void;
   state?: "read" | "edit";
   readOnly?: boolean;

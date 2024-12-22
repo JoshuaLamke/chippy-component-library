@@ -1,5 +1,5 @@
 import { Field } from "../../field";
-import { UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn } from "react-hook-form";
 import { TextInputFieldProps } from "./Field";
 import LabelWithTooltip from "../Tooltip/LabelWithTooltip";
 import { Input } from "@chakra-ui/react";
@@ -28,7 +28,7 @@ const TextInputEditView = <FormKeyNames extends string = string>({
 }: TextInputEditViewProps<FormKeyNames>) => {
   const {
     formState: { errors },
-    register,
+    control,
   } = formMethods;
 
   return (
@@ -40,16 +40,27 @@ const TextInputEditView = <FormKeyNames extends string = string>({
       helperText={helperText}
       warningText={warningText}
     >
-      <Input
-        type="text"
-        size={size}
-        {...register(name, {
-          onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-            onChange?.(e.target.value),
-          onBlur: () => onBlur?.(),
-        })}
-        {...props}
-        placeholder={placeholder}
+      <Controller
+        control={control}
+        name={name}
+        render={({ field }) => (
+          <Input
+            type="text"
+            size={size}
+            value={field.value ?? ""}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const newValue = e.target.value;
+              field.onChange(newValue);
+              onChange?.(newValue);
+            }}
+            onBlur={() => {
+              field.onBlur();
+              onBlur?.();
+            }}
+            {...props}
+            placeholder={placeholder}
+          />
+        )}
       />
     </Field>
   );

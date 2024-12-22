@@ -17,7 +17,9 @@ const TextInputEditViewWrapper = (
   }
 ) => {
   const formSchema = z.object({
-    userText: z.string().min(1, { message: "need to input text" }),
+    userText: z
+      .string({ message: "need to input text" })
+      .min(1, { message: "need to input text" }),
   });
   const methods = useForm({
     resolver: zodResolver(formSchema),
@@ -107,7 +109,7 @@ describe("TextInput/EditView", () => {
     expect(mockOnInvalid.mock.calls[0][0].userText.message).toBe(
       "need to input text"
     );
-    expect(mockOnInvalid.mock.calls[0][0].userText.type).toBe("too_small");
+    expect(mockOnInvalid.mock.calls[0][0].userText.type).toBe("invalid_type");
   });
 
   it("TextInputEditField should submit correctly", async () => {

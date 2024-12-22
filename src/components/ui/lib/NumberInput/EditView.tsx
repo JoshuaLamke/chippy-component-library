@@ -1,5 +1,5 @@
 import { Field } from "../../field";
-import { UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn } from "react-hook-form";
 import { NumberInputFieldProps } from "./Field";
 import LabelWithTooltip from "../Tooltip/LabelWithTooltip";
 import { Input } from "@chakra-ui/react";
@@ -28,7 +28,7 @@ const NumberInputEditView = <FormKeyNames extends string = string>({
 }: NumberInputEditViewProps<FormKeyNames>) => {
   const {
     formState: { errors },
-    register,
+    control,
   } = formMethods;
 
   return (
@@ -40,27 +40,44 @@ const NumberInputEditView = <FormKeyNames extends string = string>({
       helperText={helperText}
       warningText={warningText}
     >
-      <Input
-        type="number"
-        size={size}
-        {...register(name, {
-          onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-            onChange?.(sanitizeChangeValue(e.target.value)),
-          onBlur: () => onBlur?.(),
-          setValueAs: sanitizeChangeValue,
-        })}
-        {...props}
-        placeholder={placeholder}
+      <Controller
+        control={control}
+        name={name}
+        render={({ field }) => (
+          <Input
+            type="number"
+            size={size}
+            value={formatFromNumber(field.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const newValue = formatToNumber(e.target.value);
+              field.onChange(newValue);
+              onChange?.(newValue);
+            }}
+            onBlur={() => {
+              field.onBlur();
+              onBlur?.();
+            }}
+            {...props}
+            placeholder={placeholder}
+          />
+        )}
       />
     </Field>
   );
 };
 
-const sanitizeChangeValue = (value: string) => {
+const formatToNumber = (value: string) => {
   if (!value) {
-    return undefined;
+    return NaN;
   }
   return Number(value);
+};
+
+const formatFromNumber = (value: number | undefined) => {
+  if (!value) {
+    return "";
+  }
+  return String(value);
 };
 
 export default NumberInputEditView;

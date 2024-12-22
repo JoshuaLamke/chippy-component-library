@@ -84,7 +84,7 @@ describe("NumberInput/EditView", () => {
     expect(mockOnChange).toHaveBeenCalledWith(100);
 
     await userEvent.clear(numberInput);
-    expect(mockOnChange).toHaveBeenCalledWith(undefined);
+    expect(mockOnChange).toHaveBeenCalledWith(NaN);
 
     await userEvent.click(screen.getByText("Trigger Blur"));
     expect(mockOnBlur).toHaveBeenCalled();

@@ -67,6 +67,7 @@ function App() {
           >
             <GridItem colSpan={1} className="flex">
               <SelectField<keyof FormValues, "id", "name">
+                required={true}
                 name="framework"
                 optionLabelName="name"
                 optionValueName="id"
@@ -93,7 +94,6 @@ function App() {
                 onChange={(v) => console.log(v)}
                 onBlur={() => console.log("blur")}
                 state="edit"
-                required={false}
               />
             </GridItem>
             <GridItem colSpan={1}>
