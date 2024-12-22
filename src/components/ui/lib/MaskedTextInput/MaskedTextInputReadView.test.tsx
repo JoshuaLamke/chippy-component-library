@@ -15,27 +15,12 @@ describe("MaskedTextInput/ReadView", () => {
   const maskedTextInputFieldProps: MaskedTextInputReadViewProps = {
     inputValue: "text",
     label: "Read",
-    maskPlaceholder: "___ ___ ___",
-    maskSlotChar: "_",
-    formatToDisplayValue: function (
-      storedValue: string,
-      maskPlaceholder: string,
-      maskSlotChar: string
-    ): string {
-      let storedValueCharIdx = 0;
-      const displayValueArr = maskPlaceholder.split("");
-      for (let i = 0; i < displayValueArr.length; i++) {
-        if (storedValueCharIdx >= storedValue.length) {
-          break;
-        }
-        if (displayValueArr[i] !== maskSlotChar) {
-          continue;
-        }
-        displayValueArr[i] = storedValue[storedValueCharIdx];
-        storedValueCharIdx++;
-      }
-      const displayValue = displayValueArr.join("");
-      return displayValue;
+    maskOptions: {
+      mask: "___ ___ ___",
+      replacement: {
+        _: /\d/,
+      },
+      showMask: true,
     },
   };
 

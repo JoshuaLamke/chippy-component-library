@@ -8,20 +8,19 @@ import MaskedTextInputEditView, {
   MaskedTextInputEditViewProps,
 } from "./EditView";
 import { omit } from "@/components/ui/lib/utils";
+import { InputMaskProps, Replacement } from "@react-input/mask";
+
+export interface InputMaskOptions extends InputMaskProps {
+  mask: string;
+  replacement: string | Replacement;
+}
 
 export interface MaskedTextInputFieldProps<
   FormKeyNames extends string = string
 > {
   label?: React.ReactNode;
   name: FormKeyNames;
-  maskPlaceholder: string;
-  maskSlotChar: string;
-  formatToDisplayValue: (
-    storedValue: string,
-    maskPlaceholder: string,
-    maskSlotChar: string
-  ) => string;
-  formatFromDisplayValue: (displayValue: string) => string;
+  maskOptions: InputMaskOptions;
   size?: "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
   onChange?: (val: string) => void;
   onBlur?: () => void;
@@ -54,9 +53,7 @@ const MaskedTextInputField = <FormKeyNames extends string = string>(
     inputValue: formMethods.getValues(props.name),
     label: props.label,
     noValueMessage: props.noValueMessage,
-    formatToDisplayValue: props.formatToDisplayValue,
-    maskPlaceholder: props.maskPlaceholder,
-    maskSlotChar: props.maskSlotChar,
+    maskOptions: props.maskOptions,
   };
 
   const editViewProps: MaskedTextInputEditViewProps<FormKeyNames> = {

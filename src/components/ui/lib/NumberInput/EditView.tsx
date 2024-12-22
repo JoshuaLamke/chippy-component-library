@@ -45,6 +45,7 @@ const NumberInputEditView = <FormKeyNames extends string = string>({
         name={name}
         render={({ field }) => (
           <Input
+            {...props}
             type="number"
             size={size}
             value={formatFromNumber(field.value)}
@@ -57,7 +58,6 @@ const NumberInputEditView = <FormKeyNames extends string = string>({
               field.onBlur();
               onBlur?.();
             }}
-            {...props}
             placeholder={placeholder}
           />
         )}

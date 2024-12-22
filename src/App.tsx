@@ -38,7 +38,7 @@ function App() {
       ],
       text: "default",
       number: 123,
-      maskText: "123456789",
+      maskText: "123456",
     },
   });
 
@@ -124,28 +124,12 @@ function App() {
               <MaskedTextInputField
                 name="maskText"
                 label={"Mask Text"}
-                maskPlaceholder="___-__-____"
-                maskSlotChar="_"
-                formatFromDisplayValue={(val) => val.replace(/[_-]/g, "")}
-                formatToDisplayValue={(
-                  storedValue,
-                  maskPlaceholder,
-                  maskSlotChar
-                ) => {
-                  let storedValueCharIdx = 0;
-                  const displayValueArr = maskPlaceholder.split("");
-                  for (let i = 0; i < displayValueArr.length; i++) {
-                    if (storedValueCharIdx >= storedValue.length) {
-                      break;
-                    }
-                    if (displayValueArr[i] !== maskSlotChar) {
-                      continue;
-                    }
-                    displayValueArr[i] = storedValue[storedValueCharIdx];
-                    storedValueCharIdx++;
-                  }
-                  const displayValue = displayValueArr.join("");
-                  return displayValue;
+                maskOptions={{
+                  mask: "___-__-____",
+                  replacement: {
+                    _: /\d/,
+                  },
+                  showMask: true,
                 }}
                 onChange={(v) => console.log(v)}
                 onBlur={() => console.log("blur")}

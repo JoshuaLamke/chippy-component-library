@@ -45,6 +45,7 @@ const TextInputEditView = <FormKeyNames extends string = string>({
         name={name}
         render={({ field }) => (
           <Input
+            {...props}
             type="text"
             size={size}
             value={field.value ?? ""}
@@ -57,7 +58,6 @@ const TextInputEditView = <FormKeyNames extends string = string>({
               field.onBlur();
               onBlur?.();
             }}
-            {...props}
             placeholder={placeholder}
           />
         )}

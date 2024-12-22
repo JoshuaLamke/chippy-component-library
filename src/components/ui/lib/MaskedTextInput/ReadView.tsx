@@ -1,15 +1,11 @@
 import { Box } from "@chakra-ui/react";
 import { Field } from "../../field";
+import { InputMaskOptions } from "./Field";
+import { format } from "../utils";
 
 export interface MaskedTextInputReadViewProps {
   inputValue: string;
-  formatToDisplayValue: (
-    storedValue: string,
-    maskPlaceholder: string,
-    maskSlotChar: string
-  ) => string;
-  maskPlaceholder: string;
-  maskSlotChar: string;
+  maskOptions: InputMaskOptions;
   label?: React.ReactNode;
   noValueMessage?: string;
 }
@@ -18,13 +14,20 @@ const MaskedTextInputReadView = ({
   inputValue = "",
   label,
   noValueMessage,
-  formatToDisplayValue,
-  maskPlaceholder,
-  maskSlotChar,
+  maskOptions,
 }: MaskedTextInputReadViewProps) => {
+  const formatInputValue = (inputValue: string) =>
+    format(inputValue, {
+      mask: maskOptions.mask,
+      replacement: maskOptions.replacement,
+      separate: maskOptions.separate,
+      showMask: maskOptions.showMask,
+    });
+
   const displayValue = inputValue
-    ? formatToDisplayValue(inputValue, maskPlaceholder, maskSlotChar)
+    ? formatInputValue(inputValue)
     : noValueMessage || "None";
+
   return (
     <Field label={label}>
       <Box color={"gray.600"}>{displayValue}</Box>

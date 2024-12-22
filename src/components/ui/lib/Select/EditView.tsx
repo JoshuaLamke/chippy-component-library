@@ -235,6 +235,7 @@ const SelectEditView = <
         name={name}
         render={({ field }) => (
           <SelectRoot
+            {...props}
             composite={searchable || createable}
             data-testid={"selectRoot"}
             multiple={isMulti}
@@ -260,7 +261,6 @@ const SelectEditView = <
             size={size}
             closeOnSelect={!isMulti}
             tabIndex={-1}
-            {...props}
           >
             <SelectTrigger clearable={clearable}>
               <SelectValueText placeholder={placeholder} />

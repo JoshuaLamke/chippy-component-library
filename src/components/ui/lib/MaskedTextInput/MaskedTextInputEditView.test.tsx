@@ -71,30 +71,11 @@ describe("MaskedTextInput/EditView", () => {
       Icon: <button>Info</button>,
       defaultIconProps: { color: "blue" },
     },
-    maskPlaceholder: "___ ___ ___",
-    maskSlotChar: "_",
-    formatToDisplayValue: function (
-      storedValue: string,
-      maskPlaceholder: string,
-      maskSlotChar: string
-    ): string {
-      let storedValueCharIdx = 0;
-      const displayValueArr = maskPlaceholder.split("");
-      for (let i = 0; i < displayValueArr.length; i++) {
-        if (storedValueCharIdx >= storedValue.length) {
-          break;
-        }
-        if (displayValueArr[i] !== maskSlotChar) {
-          continue;
-        }
-        displayValueArr[i] = storedValue[storedValueCharIdx];
-        storedValueCharIdx++;
-      }
-      const displayValue = displayValueArr.join("");
-      return displayValue;
-    },
-    formatFromDisplayValue: function (displayValue: string): string {
-      return displayValue.replace(/[_ ]/g, "");
+    maskOptions: {
+      mask: "___ __ ____",
+      replacement: {
+        _: /\d/,
+      },
     },
   };
 
@@ -171,9 +152,9 @@ describe("MaskedTextInput/EditView", () => {
     const submitButton = screen.getByText("Submit");
     await userEvent.click(submitButton);
 
-    // expect(mockOnValid).toHaveBeenCalled();
-    // expect(mockOnValid.mock.calls[0][0]).to.deep.equal({
-    //   maskedUserText: "1",
-    // });
+    expect(mockOnValid).toHaveBeenCalled();
+    expect(mockOnValid.mock.calls[0][0]).to.deep.equal({
+      maskedUserText: "111222333",
+    });
   });
 });

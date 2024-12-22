@@ -1,21 +1,10 @@
 import { Field } from "../../field";
-import {
-  Controller,
-  ControllerRenderProps,
-  UseFormReturn,
-} from "react-hook-form";
+import { Controller, UseFormReturn } from "react-hook-form";
 import { MaskedTextInputFieldProps } from "./Field";
 import LabelWithTooltip from "../Tooltip/LabelWithTooltip";
 import { Input } from "@chakra-ui/react";
-
-export const changeCursorIndex = (
-  e: React.ChangeEvent<HTMLInputElement> | React.FocusEvent<HTMLInputElement>,
-  idx: number
-) => {
-  requestAnimationFrame(() => {
-    e.target.setSelectionRange(idx, idx);
-  });
-};
+import { InputMask, Mask } from "@react-input/mask";
+import { format } from "../utils";
 
 export interface MaskedTextInputEditViewProps<
   FormKeyNames extends string = string
@@ -25,29 +14,6 @@ export interface MaskedTextInputEditViewProps<
   > {
   formMethods: UseFormReturn<any>;
 }
-
-export const handleCursorForward =
-  (maskPlaceholder: string, maskSlotChar: string) =>
-  (e: React.ChangeEvent<HTMLInputElement>, currCursorIdx: number) => {
-    const lastSlotIdx = maskPlaceholder.lastIndexOf(maskSlotChar);
-    let nextCursorIdx = currCursorIdx;
-    while (
-      nextCursorIdx < lastSlotIdx &&
-      maskPlaceholder[nextCursorIdx] !== maskSlotChar
-    ) {
-      nextCursorIdx++;
-    }
-    changeCursorIndex(e, nextCursorIdx);
-  };
-
-export const handleCursorBack =
-  (maskPlaceholder: string, maskSlotChar: string) =>
-  (e: React.ChangeEvent<HTMLInputElement>, currCursorIdx: number) => {
-    const firstSlotIdx = maskPlaceholder.indexOf(maskSlotChar);
-    const nextCursorIdx =
-      currCursorIdx < firstSlotIdx ? firstSlotIdx : currCursorIdx;
-    changeCursorIndex(e, nextCursorIdx);
-  };
 
 const MaskedTextInputEditView = <FormKeyNames extends string = string>({
   label,
@@ -60,56 +26,21 @@ const MaskedTextInputEditView = <FormKeyNames extends string = string>({
   helperText,
   warningText,
   tooltip,
-  maskPlaceholder,
-  maskSlotChar,
-  formatFromDisplayValue,
-  formatToDisplayValue,
+  maskOptions,
   ...props
 }: MaskedTextInputEditViewProps<FormKeyNames>) => {
   const {
     formState: { errors },
     control,
   } = formMethods;
-
-  const handleMaskInputOnFocus =
-    (field: ControllerRenderProps<any, FormKeyNames>) =>
-    (e: React.FocusEvent<HTMLInputElement>) => {
-      const lastSlotIdx = maskPlaceholder.lastIndexOf(maskSlotChar);
-      const nextSlot = formatToDisplayValue(
-        field.value ?? "",
-        maskPlaceholder,
-        maskSlotChar
-      ).indexOf(maskSlotChar);
-      const nextCursorIdx = nextSlot === -1 ? lastSlotIdx + 1 : nextSlot;
-      changeCursorIndex(e, nextCursorIdx);
-    };
-
-  const handleMaskInputOnChange =
-    (field: ControllerRenderProps<any, FormKeyNames>) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const inputValue = e.target.value.substring(0, maskPlaceholder.length);
-      const currCursorIdx = e.target.selectionStart as number;
-      const isBackspace =
-        inputValue.length <
-        formatToDisplayValue(field.value ?? "", maskPlaceholder, maskSlotChar)
-          .length;
-      const storedValue = formatFromDisplayValue(inputValue);
-
-      // Handle cursor movement through mask slots
-      if (isBackspace) {
-        const moveCursorBack = handleCursorBack(maskPlaceholder, maskSlotChar);
-        moveCursorBack(e, currCursorIdx);
-      } else {
-        const moveCursorForward = handleCursorForward(
-          maskPlaceholder,
-          maskSlotChar
-        );
-        moveCursorForward(e, currCursorIdx);
-      }
-
-      onChange?.(storedValue);
-      field.onChange(storedValue);
-    };
+  const { unformat } = new Mask(maskOptions);
+  const formatInputValue = (inputValue: string) =>
+    format(inputValue, {
+      mask: maskOptions.mask,
+      replacement: maskOptions.replacement,
+      separate: maskOptions.separate,
+      showMask: maskOptions.showMask,
+    });
 
   return (
     <Field
@@ -124,22 +55,20 @@ const MaskedTextInputEditView = <FormKeyNames extends string = string>({
         control={control}
         name={name}
         render={({ field }) => (
-          <Input
-            type="text"
-            size={size}
-            name={field.name}
+          <InputMask
+            component={Input}
             {...props}
-            placeholder={maskPlaceholder}
-            value={formatToDisplayValue(
-              field.value ?? "",
-              maskPlaceholder,
-              maskSlotChar
-            )}
-            onFocus={handleMaskInputOnFocus(field)}
-            onChange={handleMaskInputOnChange(field)}
+            {...maskOptions}
+            value={formatInputValue(field.value ?? "")}
+            size={size}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const newValue = unformat(e.target.value);
+              field.onChange(newValue);
+              onChange?.(newValue);
+            }}
             onBlur={() => {
-              onBlur?.();
               field.onBlur();
+              onBlur?.();
             }}
           />
         )}
