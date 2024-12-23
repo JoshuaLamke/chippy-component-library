@@ -6,6 +6,8 @@ import { Box, Button, Grid, GridItem } from "@chakra-ui/react";
 import TextInputField from "./components/ui/lib/TextInput/Field";
 import NumberInputField from "./components/ui/lib/NumberInput/Field";
 import MaskedTextInputField from "./components/ui/lib/MaskedTextInput/Field";
+import SSNInputField from "./components/ui/lib/MaskedTextInput/SSNInput/Field";
+import PhoneNumberInputField from "./components/ui/lib/MaskedTextInput/PhoneNumberInput/Field";
 
 const selectErrorMessage = { message: "Must add at least one option" };
 const textErrorMessage = { message: "Must add text." };
@@ -24,6 +26,8 @@ const formSchema = z.object({
   text: z.string().min(1, textErrorMessage),
   number: z.number(),
   maskText: z.string().length(9),
+  ssnText: z.string().length(9),
+  phoneNumberText: z.string().length(10),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -38,7 +42,9 @@ function App() {
       ],
       text: "default",
       number: 123,
-      maskText: "123456",
+      maskText: "123456789",
+      ssnText: "123456789",
+      phoneNumberText: "1234567890",
     },
   });
 
@@ -125,10 +131,40 @@ function App() {
                 name="maskText"
                 label={"Mask Text"}
                 maskOptions={{
-                  mask: "___-__-____",
+                  mask: "___ ___ ___",
                   replacement: {
                     _: /\d/,
                   },
+                  showMask: true,
+                }}
+                onChange={(v) => console.log(v)}
+                onBlur={() => console.log("blur")}
+                state="edit"
+                required={true}
+                helperText="This is helper text"
+              />
+            </GridItem>
+            <GridItem colSpan={1}>
+              <SSNInputField
+                name="ssnText"
+                label={"SSN Text"}
+                maskOptions={{
+                  showMask: true,
+                }}
+                onChange={(v) => console.log(v)}
+                onBlur={() => console.log("blur")}
+                state="edit"
+                required={true}
+                helperText="This is helper text"
+              />
+            </GridItem>
+            <GridItem colSpan={1}>
+              <PhoneNumberInputField
+                name="phoneNumberText"
+                label={"Phone Number Text"}
+                countryCode="1"
+                phoneNumberFormat="International (With Country Code)"
+                maskOptions={{
                   showMask: true,
                 }}
                 onChange={(v) => console.log(v)}
