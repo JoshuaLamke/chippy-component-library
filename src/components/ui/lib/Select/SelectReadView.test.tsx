@@ -25,7 +25,7 @@ describe("Select/ReadView", () => {
     ],
     label: "Read",
   };
-  it("SelectField should render the selectedValues for Multi Select", () => {
+  it("SelectField should render the selectedValues for Multi Select", async () => {
     render(
       <Provider>
         <SelectReadViewWrapper {...selectFieldProps} />
@@ -35,7 +35,7 @@ describe("Select/ReadView", () => {
     expect(screen.getByText("Option2")).toBeInTheDocument();
   });
 
-  it("SelectField should render the selectedValues for single select", () => {
+  it("SelectField should render the selectedValues for single select", async () => {
     render(
       <Provider>
         <SelectReadViewWrapper
@@ -47,7 +47,7 @@ describe("Select/ReadView", () => {
     expect(screen.getByText("singleOption")).toBeInTheDocument();
   });
 
-  it("SelectField should render none selected for empty single select or multiSelect", () => {
+  it("SelectField should render none selected for empty single select or multiSelect", async () => {
     const { rerender } = render(
       <Provider>
         <SelectReadViewWrapper {...selectFieldProps} selectValue={[]} />
@@ -66,7 +66,7 @@ describe("Select/ReadView", () => {
     expect(screen.getByText("None Selected")).toBeInTheDocument();
   });
 
-  it("SelectField should render no value message for empty single select or multiSelect", () => {
+  it("SelectField should render no value message for empty single select or multiSelect", async () => {
     const { rerender } = render(
       <Provider>
         <SelectReadViewWrapper

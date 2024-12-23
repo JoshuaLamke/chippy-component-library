@@ -33,7 +33,7 @@ const FieldWrapper = (
   );
 };
 
-describe("Select/Field", () => {
+describe("Select/Field", async () => {
   const exampleOptions: SelectOption[] = [
     { value: "1", label: "Option 1" },
     { value: "2", label: "Option 2" },
@@ -66,7 +66,7 @@ describe("Select/Field", () => {
         defaultIconProps: { color: "blue" },
       },
     };
-  it("SelectField should render with edit state", () => {
+  it("SelectField should render with edit state", async () => {
     render(
       <Provider>
         <FieldWrapper {...selectFieldProps} />
@@ -75,7 +75,7 @@ describe("Select/Field", () => {
     expect(screen.getByText("Choose an option")).toBeInTheDocument();
   });
 
-  it("SelectField should render with alternative editView", () => {
+  it("SelectField should render with alternative editView", async () => {
     render(
       <Provider>
         <FieldWrapper
@@ -87,7 +87,7 @@ describe("Select/Field", () => {
     expect(screen.getByText("Other Edit View")).toBeInTheDocument();
   });
 
-  it("SelectField should render in read state", () => {
+  it("SelectField should render in read state", async () => {
     render(
       <Provider>
         <FieldWrapper {...selectFieldProps} state="read" />
@@ -96,7 +96,7 @@ describe("Select/Field", () => {
     expect(screen.getByText("None Selected")).toBeInTheDocument();
   });
 
-  it("SelectField should render with alternative ReadView", () => {
+  it("SelectField should render with alternative ReadView", async () => {
     render(
       <Provider>
         <FieldWrapper

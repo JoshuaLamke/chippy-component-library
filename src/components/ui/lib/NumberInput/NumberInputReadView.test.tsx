@@ -13,7 +13,7 @@ describe("NumberInput/ReadView", () => {
     label: "Read",
   };
 
-  it("NumberInputField should render the inputValue", () => {
+  it("NumberInputField should render the inputValue", async () => {
     render(
       <Provider>
         <NumberInputReadViewWrapper {...textInputFieldProps} />
@@ -22,7 +22,7 @@ describe("NumberInput/ReadView", () => {
     expect(screen.getByText("100")).toBeInTheDocument();
   });
 
-  it("NumberInputField should render 0 correctly even though its a falsey value", () => {
+  it("NumberInputField should render 0 correctly even though its a falsey value", async () => {
     render(
       <Provider>
         <NumberInputReadViewWrapper {...textInputFieldProps} inputValue={0} />
@@ -31,7 +31,7 @@ describe("NumberInput/ReadView", () => {
     expect(screen.getByText("0")).toBeInTheDocument();
   });
 
-  it("NumberInputField should render NaN correctly by being like theres no value", () => {
+  it("NumberInputField should render NaN correctly by being like theres no value", async () => {
     render(
       <Provider>
         <NumberInputReadViewWrapper {...textInputFieldProps} inputValue={NaN} />
@@ -40,7 +40,7 @@ describe("NumberInput/ReadView", () => {
     expect(screen.getByText("None")).toBeInTheDocument();
   });
 
-  it("NumberInputField should render None for empty input value without noValueMessage", () => {
+  it("NumberInputField should render None for empty input value without noValueMessage", async () => {
     render(
       <Provider>
         <NumberInputReadViewWrapper
@@ -52,7 +52,7 @@ describe("NumberInput/ReadView", () => {
     expect(screen.getByText("None")).toBeInTheDocument();
   });
 
-  it("NumberInputField should render no value message for empty inputValue", () => {
+  it("NumberInputField should render no value message for empty inputValue", async () => {
     render(
       <Provider>
         <NumberInputReadViewWrapper

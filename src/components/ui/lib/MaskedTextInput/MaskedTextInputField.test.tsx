@@ -51,7 +51,7 @@ describe("MaskedTextInput/Field", () => {
       },
     };
 
-  it("maskedTextInputField should render with edit state", () => {
+  it("maskedTextInputField should render with edit state", async () => {
     render(
       <Provider>
         <FieldWrapper {...maskedTextInputFieldProps} />
@@ -60,7 +60,7 @@ describe("MaskedTextInput/Field", () => {
     expect(screen.getByText("Write some masked text")).toBeInTheDocument();
   });
 
-  it("maskedTextInputField should render with alternative editView", () => {
+  it("maskedTextInputField should render with alternative editView", async () => {
     render(
       <Provider>
         <FieldWrapper
@@ -72,7 +72,7 @@ describe("MaskedTextInput/Field", () => {
     expect(screen.getByText("Other Edit View")).toBeInTheDocument();
   });
 
-  it("maskedTextInputField should render in read state", () => {
+  it("maskedTextInputField should render in read state", async () => {
     render(
       <Provider>
         <FieldWrapper {...maskedTextInputFieldProps} state="read" />
@@ -81,7 +81,7 @@ describe("MaskedTextInput/Field", () => {
     expect(screen.getByText("None")).toBeInTheDocument();
   });
 
-  it("maskedTextInputField should render with alternative ReadView", () => {
+  it("maskedTextInputField should render with alternative ReadView", async () => {
     render(
       <Provider>
         <FieldWrapper

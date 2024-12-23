@@ -11,16 +11,6 @@ import MaskedTextInputEditView, {
 } from "./EditView";
 import { omit } from "../utils";
 
-vi.mock("./EditView", async () => {
-  const actual = await vi.importActual<typeof import("./EditView")>(
-    "./EditView"
-  );
-  return {
-    ...actual,
-    changeCursorIndex: vi.fn(), // Mock as an empty function initially
-  };
-});
-
 const MaskedTextInputEditViewWrapper = (
   props: Omit<MaskedTextInputEditViewProps<"maskedUserText">, "formMethods"> & {
     onValidFn?: (data: any) => undefined;

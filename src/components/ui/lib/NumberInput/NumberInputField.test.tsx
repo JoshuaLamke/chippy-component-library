@@ -44,7 +44,7 @@ describe("NumberInput/Field", () => {
     },
   };
 
-  it("numberInputField should render with edit state", () => {
+  it("numberInputField should render with edit state", async () => {
     render(
       <Provider>
         <FieldWrapper {...numberInputFieldProps} />
@@ -53,7 +53,7 @@ describe("NumberInput/Field", () => {
     expect(screen.getByText("Write some number")).toBeInTheDocument();
   });
 
-  it("numberInputField should render with alternative editView", () => {
+  it("numberInputField should render with alternative editView", async () => {
     render(
       <Provider>
         <FieldWrapper
@@ -65,7 +65,7 @@ describe("NumberInput/Field", () => {
     expect(screen.getByText("Other Edit View")).toBeInTheDocument();
   });
 
-  it("numberInputField should render in read state", () => {
+  it("numberInputField should render in read state", async () => {
     render(
       <Provider>
         <FieldWrapper {...numberInputFieldProps} state="read" />
@@ -74,7 +74,7 @@ describe("NumberInput/Field", () => {
     expect(screen.getByText("None")).toBeInTheDocument();
   });
 
-  it("numberInputField should render with alternative ReadView", () => {
+  it("numberInputField should render with alternative ReadView", async () => {
     render(
       <Provider>
         <FieldWrapper

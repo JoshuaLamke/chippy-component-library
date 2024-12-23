@@ -24,7 +24,7 @@ describe("MaskedTextInput/ReadView", () => {
     },
   };
 
-  it("MaskedTextInputReadField should render the inputValue formatted", () => {
+  it("MaskedTextInputReadField should render the inputValue formatted", async () => {
     render(
       <Provider>
         <MaskedTextInputReadViewWrapper {...maskedTextInputFieldProps} />
@@ -33,7 +33,7 @@ describe("MaskedTextInput/ReadView", () => {
     expect(screen.getByText("tex t__ ___")).toBeInTheDocument();
   });
 
-  it("MaskedTextInputReadField should render None for empty input value without noValueMessage", () => {
+  it("MaskedTextInputReadField should render None for empty input value without noValueMessage", async () => {
     render(
       <Provider>
         <MaskedTextInputReadViewWrapper
@@ -45,7 +45,7 @@ describe("MaskedTextInput/ReadView", () => {
     expect(screen.getByText("None")).toBeInTheDocument();
   });
 
-  it("MaskedTextInputReadField should render no value message for empty inputValue", () => {
+  it("MaskedTextInputReadField should render no value message for empty inputValue", async () => {
     render(
       <Provider>
         <MaskedTextInputReadViewWrapper

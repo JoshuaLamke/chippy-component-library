@@ -268,7 +268,7 @@ describe("Select/EditView/getErrorText", () => {
     expect(result).toBe("");
   });
 
-  it("should return the message if errorObj[baseKeyName] is a FieldError", () => {
+  it("should return the message if errorObj[baseKeyName] is a FieldError", async () => {
     const errors: FieldErrors = {
       fieldName: { message: "This is an error message" } as FieldError,
     };
@@ -276,7 +276,7 @@ describe("Select/EditView/getErrorText", () => {
     expect(result).toBe("This is an error message");
   });
 
-  it("should return expected keys message if errorObj[baseKeyName] is an array of FieldErrors", () => {
+  it("should return expected keys message if errorObj[baseKeyName] is an array of FieldErrors", async () => {
     const errors = {
       fieldName: [
         {
@@ -295,7 +295,7 @@ describe("Select/EditView/getErrorText", () => {
     );
   });
 
-  it("should return expected keys message if errorObj[baseKeyName] is a Record<string, FieldError>", () => {
+  it("should return expected keys message if errorObj[baseKeyName] is a Record<string, FieldError>", async () => {
     const errors: FieldErrors = {
       fieldName: {
         key1: { message: "Error in key1" } as any,

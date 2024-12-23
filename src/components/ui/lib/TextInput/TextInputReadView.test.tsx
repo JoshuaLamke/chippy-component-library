@@ -13,7 +13,7 @@ describe("TextInput/ReadView", () => {
     label: "Read",
   };
 
-  it("TextInputField should render the inputValue", () => {
+  it("TextInputField should render the inputValue", async () => {
     render(
       <Provider>
         <TextInputReadViewWrapper {...textInputFieldProps} />
@@ -22,7 +22,7 @@ describe("TextInput/ReadView", () => {
     expect(screen.getByText("text")).toBeInTheDocument();
   });
 
-  it("TextInputField should render None for empty input value without noValueMessage", () => {
+  it("TextInputField should render None for empty input value without noValueMessage", async () => {
     render(
       <Provider>
         <TextInputReadViewWrapper {...textInputFieldProps} inputValue={""} />
@@ -31,7 +31,7 @@ describe("TextInput/ReadView", () => {
     expect(screen.getByText("None")).toBeInTheDocument();
   });
 
-  it("TextInputField should render no value message for empty inputValue", () => {
+  it("TextInputField should render no value message for empty inputValue", async () => {
     render(
       <Provider>
         <TextInputReadViewWrapper

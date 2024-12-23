@@ -12,7 +12,7 @@ vi.mock("../../tooltip", () => ({
 }));
 
 describe("Tooltip/LabelWithTooltip", () => {
-  it("renders the label without tooltip if no tooltip prop is provided", () => {
+  it("renders the label without tooltip if no tooltip prop is provided", async () => {
     render(<LabelWithTooltip label="Test Label" />);
     expect(screen.getByText("Test Label")).toBeInTheDocument();
     expect(screen.queryByTestId("tooltip-content")).not.toBeInTheDocument();
@@ -34,7 +34,7 @@ describe("Tooltip/LabelWithTooltip", () => {
     );
   });
 
-  it("renders the label with a custom tooltip icon", () => {
+  it("renders the label with a custom tooltip icon", async () => {
     render(
       <LabelWithTooltip
         label="Test Label"

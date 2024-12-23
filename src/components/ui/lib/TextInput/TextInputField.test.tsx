@@ -44,7 +44,7 @@ describe("TextInput/Field", () => {
     },
   };
 
-  it("textInputField should render with edit state", () => {
+  it("textInputField should render with edit state", async () => {
     render(
       <Provider>
         <FieldWrapper {...textInputFieldProps} />
@@ -53,7 +53,7 @@ describe("TextInput/Field", () => {
     expect(screen.getByText("Write some text")).toBeInTheDocument();
   });
 
-  it("textInputField should render with alternative editView", () => {
+  it("textInputField should render with alternative editView", async () => {
     render(
       <Provider>
         <FieldWrapper
@@ -65,7 +65,7 @@ describe("TextInput/Field", () => {
     expect(screen.getByText("Other Edit View")).toBeInTheDocument();
   });
 
-  it("textInputField should render in read state", () => {
+  it("textInputField should render in read state", async () => {
     render(
       <Provider>
         <FieldWrapper {...textInputFieldProps} state="read" />
@@ -74,7 +74,7 @@ describe("TextInput/Field", () => {
     expect(screen.getByText("None")).toBeInTheDocument();
   });
 
-  it("textInputField should render with alternative ReadView", () => {
+  it("textInputField should render with alternative ReadView", async () => {
     render(
       <Provider>
         <FieldWrapper
