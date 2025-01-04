@@ -6,7 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [react(), tsconfigPaths({
     root: "."
-  })],
+  }),],
   test: {
     watch: false,
     globals: true,
@@ -14,10 +14,11 @@ export default defineConfig({
     setupFiles: ['./setupTests.ts'],
     include: ['**/*.test.{ts,tsx,js,jsx}'],
     coverage: {
-      provider: 'istanbul',
+      provider: 'v8',
       reporter: ['text', 'html'],
       reportsDirectory: './coverage', 
       include: ['src/components/ui/lib/**/*.{ts,tsx,js,jsx}'],
+      exclude: ['src/components/ui/lib/**/{index,types}.ts', 'src/components/ui/lib/**/*.test.{js,jsx,ts,tsx}'],
       thresholds: {
         lines: 100,
         functions: 100, 

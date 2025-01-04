@@ -30,7 +30,7 @@ const MaskedTextInputReadView = ({
 
   return (
     <Field label={label}>
-      <Box color={"gray.600"}>{displayValue}</Box>
+      <Box color={"gray.fg"}>{displayValue}</Box>
     </Field>
   );
 };

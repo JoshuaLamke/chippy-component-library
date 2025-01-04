@@ -1,5 +1,5 @@
 import { Tooltip } from "../../tooltip";
-import DefaultTipIcon, { DefaultTipIconProps } from "./DefaultTipIcon";
+import DefaultTipIcon, { DefaultTipIconProps } from "../Icons/DefaultTipIcon";
 
 export interface LabelWithTooltipProps {
   label: React.ReactNode;

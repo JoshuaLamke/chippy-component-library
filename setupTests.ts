@@ -6,8 +6,18 @@ vi.stubGlobal('requestAnimationFrame', mockRequestAnimationFrame);
 
 // Silence css not parsed error for tests
 const originalError = console.error;
+// Silence zag.js warning
+const originalWarn = console.warn;
+
+console.warn = (message: string, ...args: unknown[]) => {
+  if (message.includes('[@zag-js/dismissable] node is `null` or `undefined`')) {
+    return;
+  }
+  originalWarn(message, ...args);
+};
 
 console.error = (message: string, ...args: unknown[]) => {
+  !message.includes('Could not parse CSS stylesheet') && console.log(message)
   if (message.includes('Could not parse CSS stylesheet')) {
     return;
   }

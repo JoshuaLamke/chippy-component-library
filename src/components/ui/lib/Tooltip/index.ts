@@ -1,2 +1,2 @@
-export * from "./DefaultTipIcon";
+export * from "../Icons/DefaultTipIcon";
 export * from "./LabelWithTooltip";

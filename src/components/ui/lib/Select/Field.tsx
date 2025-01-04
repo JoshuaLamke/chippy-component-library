@@ -1,7 +1,7 @@
 import { useFormContext } from "react-hook-form";
 import { SelectOption } from "./types";
 import { TooltipProps } from "../../tooltip";
-import { DefaultTipIconProps } from "../Tooltip/DefaultTipIcon";
+import { DefaultTipIconProps } from "../Icons/DefaultTipIcon";
 import SelectReadView, { SelectReadViewProps } from "./ReadView";
 import SelectEditView, { SelectEditViewProps } from "./EditView";
 import { omit } from "@/components/ui/lib/utils";
@@ -16,12 +16,13 @@ export interface SelectFieldProps<
   name: FormKeyNames;
   placeholder?: string;
   options: SelectOption<OptionValueName, OptionLabelName>[];
-  clearable?: boolean;
-  size?: "xs" | "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   onChange?: (
     val:
       | SelectOption<OptionValueName, OptionLabelName>[]
       | SelectOption<OptionValueName, OptionLabelName>
+      | null
+      | undefined
   ) => void;
   onBlur?: () => void;
   state?: "read" | "edit";
@@ -29,9 +30,13 @@ export interface SelectFieldProps<
   disabled?: boolean;
   required?: boolean;
   createable?: boolean;
-  searchable?: boolean;
   optionValueName: OptionValueName;
   optionLabelName: OptionLabelName;
+  onCreateOption?: (
+    createdOption: SelectOption<OptionValueName, OptionLabelName>
+  ) =>
+    | Promise<SelectOption<OptionValueName, OptionLabelName>>
+    | SelectOption<OptionValueName, OptionLabelName>;
   helperText?: string;
   warningText?: string;
   tooltip?: {

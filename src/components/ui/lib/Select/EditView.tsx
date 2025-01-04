@@ -1,10 +1,3 @@
-import {
-  SelectItem,
-  SelectContent,
-  SelectRoot,
-  SelectTrigger,
-  SelectValueText,
-} from "@/components/ui/select";
 import { Field } from "../../field";
 import {
   Controller,
@@ -14,11 +7,31 @@ import {
   FieldValues,
   UseFormReturn,
 } from "react-hook-form";
-import { Box, createListCollection, Input } from "@chakra-ui/react";
+import {
+  Badge,
+  Box,
+  ConditionalValue,
+  Input,
+  Span,
+  Spinner,
+} from "@chakra-ui/react";
 import { SelectOption } from "./types";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SelectFieldProps } from "./Field";
 import LabelWithTooltip from "../Tooltip/LabelWithTooltip";
+import {
+  useCombobox,
+  UseComboboxState,
+  UseComboboxStateChange,
+  UseComboboxStateChangeOptions,
+  useMultipleSelection,
+  UseMultipleSelectionState,
+  UseMultipleSelectionStateChange,
+  UseMultipleSelectionStateChangeOptions,
+} from "downshift";
+import { CloseButton } from "../../close-button";
+import { PopoverContent, PopoverRoot, PopoverTrigger } from "../../popover";
+import { FaCaretDown, FaCheck } from "react-icons/fa";
 
 export const getErrorText = (
   errorObj: FieldErrors<FieldValues>,
@@ -57,68 +70,6 @@ export const getErrorText = (
   return (keyError as FieldError).message;
 };
 
-interface CreateSearchOptionsInputProps<
-  OptionValueName extends string = "value",
-  OptionLabelName extends string = "label"
-> {
-  createable: boolean | undefined;
-  searchable: boolean;
-  searchTerm: string;
-  setSearchTerm: (value: string) => void;
-  handleAddOption: (
-    value: string
-  ) => SelectOption<OptionValueName, OptionLabelName>;
-  onAddOptionChange: (
-    newOption: SelectOption<OptionValueName, OptionLabelName>
-  ) => void;
-}
-
-export const CreateSearchOptionsInput = <
-  OptionValueName extends string = "value",
-  OptionLabelName extends string = "label"
->({
-  createable,
-  handleAddOption,
-  searchTerm,
-  searchable,
-  setSearchTerm,
-  onAddOptionChange,
-}: CreateSearchOptionsInputProps<OptionValueName, OptionLabelName>) => {
-  return (
-    <Box
-      zIndex={10}
-      top={0}
-      background={"white"}
-      paddingTop={"1"}
-      position={"sticky"}
-    >
-      {(searchable || createable) && (
-        <Field invalid={false}>
-          <Input
-            type="text"
-            width={"full"}
-            paddingLeft={"2"}
-            placeholder={`Type to ${createable ? "add" : ""}${
-              createable && searchable ? " or " : ""
-            }${searchable ? "search options..." : ""}`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              e.stopPropagation();
-              if (createable && e.key === "Enter" && e.currentTarget.value) {
-                const newOption = handleAddOption(e.currentTarget.value);
-                onAddOptionChange(newOption);
-                e.currentTarget.value = "";
-                setSearchTerm("");
-              }
-            }}
-          />
-        </Field>
-      )}
-    </Box>
-  );
-};
-
 export interface SelectEditViewProps<
   FormKeyNames extends string = string,
   OptionValueName extends string = "value",
@@ -137,89 +88,20 @@ const SelectEditView = <
 >({
   label,
   name,
-  isMulti,
-  placeholder,
-  options,
-  clearable,
-  size,
-  onChange,
-  onBlur,
   formMethods,
   required,
-  createable,
-  searchable = options.length > 10,
-  optionLabelName,
-  optionValueName,
   helperText,
   warningText,
   tooltip,
+  optionValueName,
+  optionLabelName,
+  isMulti,
   ...props
 }: SelectEditViewProps<FormKeyNames, OptionValueName, OptionLabelName>) => {
   const {
     formState: { errors },
     control,
   } = formMethods;
-
-  const [userOptions, setUserOptions] = useState<
-    SelectOption<OptionValueName, OptionLabelName>[]
-  >([]);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-
-  // Adds new option from create input
-  const handleAddOption = (value: string) => {
-    const newOption = {
-      [optionLabelName]: value,
-      [optionValueName]: value,
-    } as SelectOption<OptionValueName, OptionLabelName>;
-    setUserOptions((prev) => [...prev, newOption]);
-    return newOption;
-  };
-
-  // Call on change when the new option is added
-  const onAddOptionChange =
-    (field: ControllerRenderProps) =>
-    (newOption: SelectOption<OptionValueName, OptionLabelName>) => {
-      const formattedValue = isMulti
-        ? [...(field.value ?? []), newOption]
-        : newOption;
-      onChange?.(formattedValue);
-      field.onChange(formattedValue);
-    };
-
-  // Merge and conditionally filter options based on the search term
-  const { mergedOptions, filteredMergeOptions } = useMemo(() => {
-    const mergedOptions = [...options, ...userOptions];
-    let filteredMergeOptions = [...mergedOptions];
-    if (searchable) {
-      filteredMergeOptions = filteredMergeOptions.filter((option) =>
-        option[optionLabelName].toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    return { mergedOptions, filteredMergeOptions };
-  }, [options, userOptions, searchTerm, searchable]);
-
-  const collection = useMemo(
-    () =>
-      createListCollection({
-        items: mergedOptions,
-        itemToValue: (item) => item[optionValueName],
-        itemToString: (item) => item[optionLabelName],
-      }),
-    [mergedOptions]
-  );
-
-  // Coerces value to string array based on single or multi select
-  const calculateSelectValue = (
-    field: ControllerRenderProps<FieldValues, FormKeyNames>
-  ) => {
-    if (isMulti) {
-      const value =
-        field.value || ([] as SelectOption<OptionValueName, OptionLabelName>[]);
-      return value.map((option) => option[optionValueName]) as string[];
-    }
-
-    return [field.value?.[optionValueName] as string].filter((item) => item);
-  };
 
   return (
     <Field
@@ -233,61 +115,921 @@ const SelectEditView = <
       <Controller
         control={control}
         name={name}
-        render={({ field }) => (
-          <SelectRoot
-            {...props}
-            composite={searchable || createable}
-            data-testid={"selectRoot"}
-            multiple={isMulti}
-            name={field.name}
-            value={calculateSelectValue(field)}
-            onValueChange={({ items }) => {
-              // keep in array for multi-select, otherwise pass object
-              const formattedValue = isMulti ? items : items?.[0];
-              onChange?.(formattedValue);
-              return field.onChange(formattedValue);
-            }}
-            onInteractOutside={() => {
-              onBlur?.();
-              field.onBlur();
-            }}
-            onOpenChange={({ open }) => {
-              // Clear search on close
-              if (!open) {
-                setSearchTerm("");
-              }
-            }}
-            collection={collection}
-            size={size}
-            closeOnSelect={!isMulti}
-            tabIndex={-1}
-          >
-            <SelectTrigger clearable={clearable}>
-              <SelectValueText placeholder={placeholder} />
-            </SelectTrigger>
-            <SelectContent className="pt-0">
-              <CreateSearchOptionsInput<OptionValueName, OptionLabelName>
-                createable={createable}
-                handleAddOption={handleAddOption}
-                onAddOptionChange={onAddOptionChange(field)}
-                searchTerm={searchTerm}
-                searchable={searchable}
-                setSearchTerm={setSearchTerm}
-              />
-              {filteredMergeOptions.map((option) => (
-                <SelectItem
-                  data-testid={"selectOption"}
-                  item={option}
-                  key={option[optionValueName]}
-                >
-                  {option[optionLabelName]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </SelectRoot>
-        )}
+        render={({ field }) =>
+          isMulti ? (
+            <HookFormSelectMulti
+              name={name}
+              optionValueName={optionValueName}
+              optionLabelName={optionLabelName}
+              field={field}
+              formMethods={formMethods}
+              {...props}
+            />
+          ) : (
+            <HookFormSelectSingle
+              name={name}
+              optionValueName={optionValueName}
+              optionLabelName={optionLabelName}
+              field={field}
+              formMethods={formMethods}
+              {...props}
+            />
+          )
+        }
       />
     </Field>
+  );
+};
+
+const sizeMap = {
+  sm: {
+    totalHeight: "9",
+    inputHeight: "5",
+    fontSize: "2xs",
+    chipCloseButtonSize: "2xs",
+    mainCloseButtonSize: "xs",
+    singleSelectFontSize: "sm",
+    spinnerSize: "xs",
+    spinnerTopPosition: "33%",
+  },
+  md: {
+    totalHeight: "10",
+    inputHeight: "6",
+    fontSize: "xs",
+    chipCloseButtonSize: "2xs",
+    mainCloseButtonSize: "sm",
+    singleSelectFontSize: "md",
+    spinnerSize: "sm",
+    spinnerTopPosition: "31%",
+  },
+  lg: {
+    totalHeight: "11",
+    inputHeight: "7",
+    fontSize: "sm",
+    chipCloseButtonSize: "xs",
+    mainCloseButtonSize: "sm",
+    singleSelectFontSize: "lg",
+    spinnerSize: "md",
+    spinnerTopPosition: "29%",
+  },
+  xl: {
+    totalHeight: "12",
+    inputHeight: "8",
+    fontSize: "md",
+    chipCloseButtonSize: "sm",
+    mainCloseButtonSize: "sm",
+    singleSelectFontSize: "xl",
+    spinnerSize: "md",
+    spinnerTopPosition: "29%",
+  },
+};
+
+interface HookFormSelectProps<
+  FormKeyNames extends string = string,
+  OptionValueName extends string = "value",
+  OptionLabelName extends string = "label"
+> extends SelectEditViewProps<FormKeyNames, OptionValueName, OptionLabelName> {
+  field: ControllerRenderProps<any, FormKeyNames>;
+}
+
+const HookFormSelectSingle = <
+  FormKeyNames extends string = string,
+  OptionValueName extends string = "value",
+  OptionLabelName extends string = "label"
+>({
+  formMethods,
+  field,
+  options,
+  optionLabelName,
+  optionValueName,
+  size,
+  placeholder,
+  onChange,
+  onBlur,
+  onCreateOption = (createdOption) => createdOption,
+  createable,
+  disabled,
+  readOnly,
+  name,
+}: HookFormSelectProps<FormKeyNames, OptionValueName, OptionLabelName>) => {
+  const {
+    formState: { errors },
+  } = formMethods;
+  const isInvalid = !!errors[name];
+
+  const [mergedOptions, setMergedOptions] = useState(options);
+  const [selectedOption, setSelectedOption] = useState<SelectOption<
+    OptionValueName,
+    OptionLabelName
+  > | null>(field.value ?? null);
+
+  const [inputValue, setInputValue] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const getFilteredOptions = (inputValue: string) => {
+    const lowerCasedInputValue = inputValue.toLowerCase();
+    const filteredOptionsObj = mergedOptions.reduce(
+      (prev, curr) => {
+        const filterMatch = curr[optionLabelName]
+          .toLowerCase()
+          .includes(lowerCasedInputValue);
+        const exactMatch =
+          curr[optionLabelName].toLowerCase() === lowerCasedInputValue;
+        if (filterMatch) {
+          return {
+            options: [...prev.options, curr],
+            exactMatch: prev.exactMatch || exactMatch,
+          };
+        }
+        return prev;
+      },
+      {
+        options: [] as SelectOption<OptionValueName, OptionLabelName>[],
+        exactMatch: false,
+      }
+    );
+
+    const newOption = {
+      __isCreatedSelectOptionChippyCL__: true,
+      [optionLabelName]: `Create: ${inputValue}`,
+      [optionValueName]: lowerCasedInputValue,
+    } as SelectOption<OptionValueName, OptionLabelName>;
+
+    return createable && !filteredOptionsObj.exactMatch && inputValue.trim()
+      ? [newOption, ...filteredOptionsObj.options]
+      : filteredOptionsObj.options;
+  };
+
+  const filteredOptions = useMemo(
+    () => getFilteredOptions(inputValue),
+    [inputValue, mergedOptions]
+  );
+
+  const handleCreateOption = useCallback(
+    async (newOption: SelectOption<OptionValueName, OptionLabelName>) => {
+      try {
+        setIsLoading(true);
+        const result = await Promise.resolve(onCreateOption(newOption));
+        setIsLoading(false);
+        return result;
+      } catch (error) {
+        console.error("Error in onCreateOption:", error);
+        setIsLoading(false);
+        return undefined;
+      }
+    },
+    [onCreateOption]
+  );
+
+  const comboboxStateReducer = (
+    _state: UseComboboxState<SelectOption<OptionValueName, OptionLabelName>>,
+    actionAndChanges: UseComboboxStateChangeOptions<
+      SelectOption<OptionValueName, OptionLabelName>
+    >
+  ) => {
+    const { changes, type } = actionAndChanges;
+    switch (type) {
+      case useCombobox.stateChangeTypes.InputKeyDownEscape:
+        return {
+          ...changes,
+          isOpen: false,
+          highlightedIndex: -1,
+        };
+      default:
+        return changes;
+    }
+  };
+
+  const comboboxStateChange = ({
+    inputValue: newInputValue,
+    type,
+    selectedItem: newSelectedOption,
+  }: UseComboboxStateChange<
+    SelectOption<OptionValueName, OptionLabelName>
+  >) => {
+    switch (type) {
+      case useCombobox.stateChangeTypes.ItemClick:
+      case useCombobox.stateChangeTypes.InputKeyDownEnter:
+        /* v8 ignore next 3*/
+        if (!newSelectedOption) {
+          break;
+        }
+
+        const wasCreated =
+          newSelectedOption["__isCreatedSelectOptionChippyCL__"];
+        // Add option normally if it wasnt created
+        if (!wasCreated) {
+          setSelectedOption(newSelectedOption);
+          setInputValue("");
+          break;
+        }
+
+        const newOption = {
+          [optionValueName]: newSelectedOption[optionValueName],
+          [optionLabelName]: (
+            newSelectedOption[optionLabelName] as string
+          ).substring(8), // remove Create: from label when saving
+        } as SelectOption<OptionValueName, OptionLabelName>;
+
+        // Creating a new option
+        handleCreateOption(newOption).then((formattedOption) => {
+          // If no error happens, create
+          if (formattedOption) {
+            setMergedOptions([formattedOption, ...mergedOptions]);
+            setSelectedOption(formattedOption);
+          }
+        });
+        setInputValue("");
+        break;
+      case useCombobox.stateChangeTypes.InputChange:
+        setInputValue(newInputValue!.trimStart());
+        break;
+      default:
+        break;
+    }
+  };
+
+  const {
+    isOpen,
+    getToggleButtonProps,
+    getMenuProps,
+    getInputProps,
+    highlightedIndex,
+    getItemProps,
+  } = useCombobox({
+    isItemDisabled() {
+      return !!(isLoading || disabled || readOnly);
+    },
+    selectedItem: selectedOption,
+    defaultHighlightedIndex: 0,
+    items: filteredOptions,
+    itemToString(option) {
+      return option ? option[optionLabelName] : "";
+    },
+    inputValue,
+    stateReducer: comboboxStateReducer,
+    onStateChange: comboboxStateChange,
+  });
+
+  useEffect(() => {
+    field.onChange(selectedOption);
+    onChange?.(selectedOption);
+  }, [selectedOption]);
+
+  return (
+    <PopoverRoot
+      open={isOpen}
+      positioning={{
+        sameWidth: true,
+        placement: "bottom",
+      }}
+    >
+      <PopoverTrigger width={"full"} as={"div"}>
+        <Box
+          position="relative"
+          display="inline-flex"
+          width="100%"
+          {...getToggleButtonProps()}
+        >
+          <Input
+            paddingStart={"3"}
+            paddingEnd={"16"}
+            size={size}
+            placeholder={
+              !selectedOption && !inputValue && !isLoading
+                ? placeholder
+                : undefined
+            }
+            disabled={disabled}
+            readOnly={isLoading || readOnly}
+            {...getInputProps({
+              onClick: (e) => e.stopPropagation(),
+              onBlur: () => {
+                field.onBlur();
+                onBlur?.();
+              },
+            })}
+          />
+          {isLoading && (
+            <Spinner
+              position="absolute"
+              left="3"
+              top={sizeMap[size ?? "md"]["spinnerTopPosition"]}
+              size={
+                sizeMap[size ?? "md"]["spinnerSize"] as ConditionalValue<
+                  "sm" | "md" | "lg" | "xs"
+                >
+              }
+            />
+          )}
+          {!!selectedOption && !inputValue && !isLoading && (
+            <Box
+              position="absolute"
+              left="3"
+              top="50%"
+              transform="translateY(-50%)"
+              fontSize={sizeMap[size ?? "md"]["singleSelectFontSize"]}
+              whiteSpace="nowrap"
+              overflow="hidden"
+              textOverflow="ellipsis"
+              width="calc(100% - 76px)"
+            >
+              {selectedOption[optionLabelName]}
+            </Box>
+          )}
+          <Box
+            position="absolute"
+            right="0"
+            top="0"
+            bottom="0"
+            display="flex"
+            alignItems="center"
+          >
+            {!!selectedOption && (
+              <Box display={"flex"} alignItems={"center"}>
+                <CloseButton
+                  disabled={isLoading || disabled || readOnly}
+                  size={
+                    sizeMap[size ?? "md"][
+                      "mainCloseButtonSize"
+                    ] as ConditionalValue<"xs" | "sm">
+                  }
+                  background={"none"}
+                  onClick={() => setSelectedOption(null)}
+                  aria-label="Remove selected option"
+                />
+              </Box>
+            )}
+            <Span
+              width="0.5px"
+              background="border"
+              height="calc(100% - 14px)"
+            />
+            <Box display="flex" alignItems="center" paddingX="2">
+              <FaCaretDown
+                size={20}
+                color={
+                  isInvalid
+                    ? "var(--chakra-colors-border-error)"
+                    : "var(--chakra-colors-fg-emphasized)"
+                }
+              />
+            </Box>
+          </Box>
+        </Box>
+      </PopoverTrigger>
+      <PopoverContent
+        width={"full"}
+        marginTop={"1"}
+        maxHeight={"80"}
+        overflowY={"scroll"}
+        padding={"0"}
+        {...getMenuProps()}
+      >
+        {filteredOptions.map((option, index) => (
+          <Box
+            bg={
+              highlightedIndex === index ? "colorPalette.emphasized" : "inherit"
+            }
+            display={"flex"}
+            alignItems={"center"}
+            justifyContent={"space-between"}
+            paddingY={"2"}
+            paddingX={"3"}
+            key={option[optionValueName]}
+            {...getItemProps({ item: option, index })}
+          >
+            <Box
+              as="span"
+              overflow="hidden"
+              whiteSpace="nowrap"
+              textOverflow="ellipsis"
+              flex="1"
+              marginRight="2"
+            >
+              {option[optionLabelName]}
+            </Box>
+            {option[optionValueName] === selectedOption?.[optionValueName] && (
+              <FaCheck />
+            )}
+          </Box>
+        ))}
+      </PopoverContent>
+    </PopoverRoot>
+  );
+};
+
+const HookFormSelectMulti = <
+  FormKeyNames extends string = string,
+  OptionValueName extends string = "value",
+  OptionLabelName extends string = "label"
+>({
+  formMethods,
+  field,
+  options,
+  optionLabelName,
+  optionValueName,
+  size,
+  placeholder,
+  onChange,
+  onBlur,
+  onCreateOption = (createdOption) => createdOption,
+  createable,
+  disabled,
+  readOnly,
+  name,
+}: HookFormSelectProps<FormKeyNames, OptionValueName, OptionLabelName>) => {
+  const {
+    formState: { errors },
+  } = formMethods;
+  const isInvalid = !!errors[name];
+
+  const [mergedOptions, setMergedOptions] = useState(options);
+  const [selectedOptions, setSelectedOptions] = useState<
+    SelectOption<OptionValueName, OptionLabelName>[]
+  >(field.value ?? []);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+
+  const containerRef = useRef<HTMLButtonElement>(null);
+
+  const [inputValue, setInputValue] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const getFilteredOptions = (inputValue: string) => {
+    const lowerCasedInputValue = inputValue.toLowerCase();
+    const filteredOptionsObj = mergedOptions.reduce(
+      (prev, curr) => {
+        const filterMatch = curr[optionLabelName]
+          .toLowerCase()
+          .includes(lowerCasedInputValue);
+        const exactMatch =
+          curr[optionLabelName].toLowerCase() === lowerCasedInputValue;
+        if (filterMatch) {
+          return {
+            options: [...prev.options, curr],
+            exactMatch: prev.exactMatch || exactMatch,
+          };
+        }
+        return prev;
+      },
+      {
+        options: [] as SelectOption<OptionValueName, OptionLabelName>[],
+        exactMatch: false,
+      }
+    );
+
+    const newOption = {
+      __isCreatedSelectOptionChippyCL__: true,
+      [optionLabelName]: `Create: ${inputValue}`,
+      [optionValueName]: lowerCasedInputValue,
+    } as SelectOption<OptionValueName, OptionLabelName>;
+
+    return createable && !filteredOptionsObj.exactMatch && inputValue.trim()
+      ? [newOption, ...filteredOptionsObj.options]
+      : filteredOptionsObj.options;
+  };
+
+  const filteredOptions = useMemo(
+    () => getFilteredOptions(inputValue),
+    [inputValue, mergedOptions]
+  );
+
+  const multiSelectStateChange = ({
+    selectedItems: newSelectedOptions,
+    type,
+  }: UseMultipleSelectionStateChange<
+    SelectOption<OptionValueName, OptionLabelName>
+  >) => {
+    switch (type) {
+      case useMultipleSelection.stateChangeTypes.DropdownKeyDownBackspace:
+      case useMultipleSelection.stateChangeTypes.SelectedItemKeyDownBackspace:
+      case useMultipleSelection.stateChangeTypes.SelectedItemKeyDownDelete:
+      case useMultipleSelection.stateChangeTypes.FunctionRemoveSelectedItem:
+        if (!(isLoading || disabled || readOnly)) {
+          setSelectedOptions(newSelectedOptions ?? /* v8 ignore next */ []);
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  const multiSelectStateReducer = (
+    state: UseMultipleSelectionState<
+      SelectOption<OptionValueName, OptionLabelName>
+    >,
+    actionAndChanges: UseMultipleSelectionStateChangeOptions<
+      SelectOption<OptionValueName, OptionLabelName>
+    >
+  ) => {
+    switch (actionAndChanges.type) {
+      case useMultipleSelection.stateChangeTypes.DropdownKeyDownBackspace:
+      case useMultipleSelection.stateChangeTypes.SelectedItemKeyDownBackspace:
+      case useMultipleSelection.stateChangeTypes.SelectedItemKeyDownDelete:
+      case useMultipleSelection.stateChangeTypes.FunctionRemoveSelectedItem:
+        const prevActiveIndex = state.activeIndex;
+        const nextActiveIndex = prevActiveIndex - 1;
+        return {
+          ...actionAndChanges.changes,
+          activeIndex: nextActiveIndex,
+        };
+      default:
+        return { ...actionAndChanges.changes };
+      /* v8 ignore next */
+    }
+  };
+
+  const {
+    getSelectedItemProps,
+    getDropdownProps,
+    removeSelectedItem,
+    activeIndex,
+  } = useMultipleSelection({
+    selectedItems: selectedOptions,
+    onStateChange: multiSelectStateChange,
+    stateReducer: multiSelectStateReducer,
+  });
+
+  const handleCreateOption = useCallback(
+    async (newOption: SelectOption<OptionValueName, OptionLabelName>) => {
+      try {
+        setIsLoading(true);
+        const result = await Promise.resolve(onCreateOption(newOption));
+        setIsLoading(false);
+        return result;
+      } catch (error) {
+        console.error("Error in onCreateOption:", error);
+        setIsLoading(false);
+        return undefined;
+      }
+    },
+    [onCreateOption]
+  );
+
+  const comboboxStateReducer = (
+    state: UseComboboxState<SelectOption<OptionValueName, OptionLabelName>>,
+    actionAndChanges: UseComboboxStateChangeOptions<
+      SelectOption<OptionValueName, OptionLabelName>
+    >
+  ) => {
+    const { changes, type } = actionAndChanges;
+    switch (type) {
+      case useCombobox.stateChangeTypes.InputKeyDownEscape:
+        inputRef.current?.focus();
+        return {
+          ...changes,
+          isOpen: false,
+          highlightedIndex: -1,
+        };
+
+      case useCombobox.stateChangeTypes.ItemClick:
+      case useCombobox.stateChangeTypes.InputKeyDownEnter:
+        return {
+          ...changes,
+          isOpen: true,
+          highlightedIndex: state.highlightedIndex!,
+        };
+      default:
+        return changes;
+    }
+  };
+
+  const comboboxStateChange = ({
+    inputValue: newInputValue,
+    type,
+    selectedItem: newSelectedOption,
+  }: UseComboboxStateChange<
+    SelectOption<OptionValueName, OptionLabelName>
+  >) => {
+    switch (type) {
+      case useCombobox.stateChangeTypes.ItemClick:
+      case useCombobox.stateChangeTypes.InputKeyDownEnter:
+        /* v8 ignore next 3*/
+        if (!newSelectedOption) {
+          break;
+        }
+        const selectedOption = selectedOptions.find(
+          (option) =>
+            option[optionValueName] === newSelectedOption[optionValueName]
+        );
+        // They want to remove a selected option
+        if (selectedOption) {
+          const newSelectedOptions = selectedOptions.filter(
+            (option) =>
+              option[optionValueName] !== selectedOption[optionValueName]
+          );
+          setSelectedOptions(newSelectedOptions); // Instead of calling remove, reassign to not have remove function reducer run
+          break;
+        }
+
+        const wasCreated =
+          !!newSelectedOption["__isCreatedSelectOptionChippyCL__"];
+
+        // Selecting an existing option
+        if (!wasCreated) {
+          setSelectedOptions([...selectedOptions, newSelectedOption]);
+          setInputValue("");
+          break;
+        }
+
+        const newOption = {
+          [optionValueName]: newSelectedOption[optionValueName],
+          [optionLabelName]: (
+            newSelectedOption[optionLabelName] as string
+          ).substring(8), // remove Create: from label when saving
+        } as SelectOption<OptionValueName, OptionLabelName>;
+
+        // Creating a new option
+        handleCreateOption(newOption).then((formattedOption) => {
+          // If no error happens, create
+          if (formattedOption) {
+            setMergedOptions([formattedOption, ...mergedOptions]);
+            setSelectedOptions([...selectedOptions, formattedOption]);
+          }
+        });
+        setInputValue("");
+        break;
+      case useCombobox.stateChangeTypes.InputChange:
+        setInputValue(newInputValue!.trimStart());
+        break;
+      default:
+        break;
+    }
+  };
+
+  const {
+    isOpen,
+    getToggleButtonProps,
+    getMenuProps,
+    getInputProps,
+    highlightedIndex,
+    getItemProps,
+  } = useCombobox({
+    isItemDisabled() {
+      return !!(isLoading || disabled || readOnly);
+    },
+    selectedItem: null,
+    defaultHighlightedIndex: 0,
+    items: filteredOptions,
+    itemToString(option) {
+      return option ? option[optionLabelName] : "";
+    },
+    inputValue,
+    stateReducer: comboboxStateReducer,
+    onStateChange: comboboxStateChange,
+  });
+
+  useEffect(() => {
+    field.onChange(selectedOptions);
+    onChange?.(selectedOptions);
+  }, [selectedOptions]);
+
+  const calculateContainerBorderStyles = () => {
+    if (isInvalid) {
+      return {
+        borderWidth: "thin",
+        borderColor: "border.error",
+        ...(isInputFocused
+          ? {
+              outlineColor: "border.error",
+              outlineWidth: "thin",
+              outlineStyle: "solid",
+            }
+          : undefined),
+      };
+    } else if (isInputFocused) {
+      return {
+        borderWidth: "thin",
+        borderColor: "border",
+        outlineColor: "colorPalette.focusRing",
+        outlineWidth: "thin",
+        outlineStyle: "solid",
+      };
+    } else {
+      return {
+        borderWidth: "thin",
+      };
+    }
+  };
+
+  return (
+    <PopoverRoot
+      open={isOpen}
+      positioning={{
+        sameWidth: true,
+        placement: "bottom",
+      }}
+    >
+      <PopoverTrigger width={"full"} as={"div"}>
+        <Box
+          display={"flex"}
+          rounded={"sm"}
+          minHeight={sizeMap[size ?? "md"]["totalHeight"]}
+          {...calculateContainerBorderStyles()}
+          width={"full"}
+          alignItems={"center"}
+          paddingStart={"2"}
+          {...getToggleButtonProps({
+            ref: containerRef,
+          })}
+          onClick={(e) => {
+            const clickable = !(isLoading || disabled || readOnly);
+            if (clickable) {
+              getToggleButtonProps().onClick?.(e);
+            }
+          }}
+        >
+          <Box
+            display={"flex"}
+            flexWrap={"wrap"}
+            flex={"1"}
+            paddingStart={"1"}
+            paddingY={"0.5"}
+            alignItems={"center"}
+            overflow={"hidden"}
+          >
+            {selectedOptions.map((selectedOptionForRender, index) => {
+              return (
+                <Box
+                  margin={"0.5"}
+                  padding={"1"}
+                  minWidth={"0"}
+                  display={"flex"}
+                  alignItems={"center"}
+                  key={selectedOptionForRender[optionValueName]}
+                >
+                  <Badge
+                    rounded={"xs"}
+                    fontSize={sizeMap[size ?? "md"]["fontSize"]}
+                    lineHeight={"taller"}
+                    paddingStart={"3"}
+                    paddingEnd={"0"}
+                    overflow="hidden"
+                  >
+                    <Box
+                      whiteSpace="nowrap"
+                      overflow="hidden"
+                      textOverflow="ellipsis"
+                    >
+                      {selectedOptionForRender[optionLabelName]}
+                    </Box>
+
+                    <CloseButton
+                      {...getSelectedItemProps({
+                        selectedItem: selectedOptionForRender,
+                        index,
+                        tabIndex: -1,
+                      })}
+                      background={
+                        index === activeIndex ? "red.subtle" : "inherit"
+                      }
+                      outline={"none"}
+                      aria-label={`Remove ${selectedOptionForRender[optionLabelName]}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSelectedItem(selectedOptionForRender);
+                      }}
+                      disabled={isLoading || disabled || readOnly}
+                      marginStart={"0.5"}
+                      size={
+                        sizeMap[size ?? "md"][
+                          "chipCloseButtonSize"
+                        ] as ConditionalValue<"2xs" | "xs" | "sm">
+                      }
+                      rounded={"xs"}
+                      variant={"ghost"}
+                    />
+                  </Badge>
+                </Box>
+              );
+            })}
+            {isLoading && (
+              <Spinner
+                size={
+                  sizeMap[size ?? "md"]["spinnerSize"] as ConditionalValue<
+                    "sm" | "md" | "lg" | "xs"
+                  >
+                }
+                marginX={"1"}
+              />
+            )}
+            <Input
+              display={"block"}
+              margin={"0.5"}
+              width={"full"}
+              flex={"1 0 0%"}
+              minWidth={"10"}
+              padding={"0"}
+              border={"0"}
+              outline={"0"}
+              maxHeight={sizeMap[size ?? "md"]["inputHeight"]}
+              fontSize={"sm"}
+              placeholder={
+                selectedOptions.length === 0 && !isLoading
+                  ? placeholder
+                  : undefined
+              }
+              disabled={disabled}
+              readOnly={readOnly || isLoading}
+              {...getInputProps({
+                ...getDropdownProps({
+                  onClick: (e) => e.stopPropagation(),
+                  ref: inputRef,
+                  onFocus: () => {
+                    setIsInputFocused(true);
+                  },
+                  onBlur: () => {
+                    field.onBlur();
+                    onBlur?.();
+                    setIsInputFocused(false);
+                  },
+                }),
+              })}
+            />
+          </Box>
+
+          {!!selectedOptions.length && (
+            <Box display={"flex"} alignItems={"center"}>
+              <CloseButton
+                disabled={isLoading || disabled || readOnly}
+                size={
+                  sizeMap[size ?? "md"][
+                    "mainCloseButtonSize"
+                  ] as ConditionalValue<"xs" | "sm">
+                }
+                background={"none"}
+                onClick={() => setSelectedOptions([])}
+                aria-label="Remove all selected options"
+              />
+            </Box>
+          )}
+          <Span
+            alignSelf={"stretch"}
+            width={"1px"}
+            marginY={"1.5"}
+            background={"border"}
+          ></Span>
+          <Box display={"flex"} alignItems={"center"} paddingX={"2"}>
+            <FaCaretDown
+              size={20}
+              color={
+                isInvalid
+                  ? "var(--chakra-colors-border-error)"
+                  : "var(--chakra-colors-fg-emphasized)"
+              }
+            />
+          </Box>
+        </Box>
+      </PopoverTrigger>
+      <PopoverContent
+        width={"full"}
+        marginTop={"1"}
+        maxHeight={"80"}
+        overflowY={"scroll"}
+        padding={"0"}
+        {...getMenuProps()}
+      >
+        {filteredOptions.map((option, index) => (
+          <Box
+            bg={
+              highlightedIndex === index ? "colorPalette.emphasized" : "inherit"
+            }
+            display={"flex"}
+            alignItems={"center"}
+            justifyContent={"space-between"}
+            paddingY={"2"}
+            paddingX={"3"}
+            key={option[optionValueName]}
+            {...getItemProps({ item: option, index })}
+            aria-selected={
+              !!selectedOptions.find(
+                (selectedOption) =>
+                  selectedOption[optionValueName] === option[optionValueName]
+              )
+            }
+          >
+            <Box
+              as="span"
+              overflow="hidden"
+              whiteSpace="nowrap"
+              textOverflow="ellipsis"
+              flex="1"
+              marginRight="2"
+            >
+              {option[optionLabelName]}
+            </Box>
+            {!!selectedOptions.find(
+              (selectedOption) =>
+                selectedOption[optionValueName] === option[optionValueName]
+            ) && <FaCheck />}
+          </Box>
+        ))}
+      </PopoverContent>
+    </PopoverRoot>
   );
 };
 

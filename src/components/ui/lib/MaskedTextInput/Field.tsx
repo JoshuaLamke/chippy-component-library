@@ -1,6 +1,6 @@
 import { useFormContext } from "react-hook-form";
 import { TooltipProps } from "../../tooltip";
-import { DefaultTipIconProps } from "../Tooltip/DefaultTipIcon";
+import { DefaultTipIconProps } from "../Icons/DefaultTipIcon";
 import MaskedTextInputReadView, {
   MaskedTextInputReadViewProps,
 } from "./ReadView";

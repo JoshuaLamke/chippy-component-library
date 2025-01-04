@@ -1,6 +1,6 @@
 import { useFormContext } from "react-hook-form";
 import { TooltipProps } from "../../tooltip";
-import { DefaultTipIconProps } from "../Tooltip/DefaultTipIcon";
+import { DefaultTipIconProps } from "../Icons/DefaultTipIcon";
 import NumberInputReadView, { NumberInputReadViewProps } from "./ReadView";
 import NumberInputEditView, { NumberInputEditViewProps } from "./EditView";
 import { omit } from "@/components/ui/lib/utils";

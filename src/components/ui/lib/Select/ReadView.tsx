@@ -29,7 +29,14 @@ const SelectReadView = <
   if (!selectValue || (isMultiSelect && !selectValue.length)) {
     return (
       <Field label={label}>
-        <Box>{noValueMessage || "None Selected"}</Box>
+        <Box
+          color={"gray.fg"}
+          flexWrap={"wrap"}
+          overflow={"hidden"}
+          width={"full"}
+        >
+          {noValueMessage || "None Selected"}
+        </Box>
       </Field>
     );
   }
@@ -38,19 +45,31 @@ const SelectReadView = <
   if (isMultiSelect) {
     return (
       <Field label={label}>
-        <Box display={"flex"} flexWrap={"wrap"}>
+        <Box
+          display={"flex"}
+          flexWrap={"wrap"}
+          overflow={"hidden"}
+          width={"full"}
+        >
           {selectValue.map((option) => (
             <Badge
               fontSize={"xs"}
-              color={"gray.700"}
-              background={"gray.200"}
-              paddingX={"2"}
+              padding={"2"}
               paddingY={"1"}
-              margin={"1"}
-              rounded={"full"}
+              marginEnd={"1"}
+              marginBottom={"1"}
               key={option[optionValueName]}
+              color={"gray.fg"}
+              overflow={"hidden"}
             >
-              {option[optionLabelName]}
+              <Box
+                whiteSpace="nowrap"
+                overflow="hidden"
+                textOverflow="ellipsis"
+                maxWidth={"full"}
+              >
+                {option[optionLabelName]}
+              </Box>
             </Badge>
           ))}
         </Box>
@@ -59,8 +78,15 @@ const SelectReadView = <
   }
 
   return (
-    <Field label={label}>
-      <Box>{selectValue[optionLabelName]}</Box>
+    <Field label={label} width={"full"}>
+      <Box
+        color={"gray.fg"}
+        flexWrap={"wrap"}
+        overflow={"hidden"}
+        width={"full"}
+      >
+        {selectValue[optionLabelName]}
+      </Box>
     </Field>
   );
 };

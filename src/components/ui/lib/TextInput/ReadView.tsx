@@ -14,7 +14,7 @@ const TextInputReadView = ({
 }: TextInputReadViewProps) => {
   return (
     <Field label={label}>
-      <Box color={"gray.600"}>{inputValue || noValueMessage || "None"}</Box>
+      <Box color={"gray.fg"}>{inputValue || noValueMessage || "None"}</Box>
     </Field>
   );
 };
