@@ -563,9 +563,11 @@ const HookFormSelectMulti = <
     const lowerCasedInputValue = inputValue.toLowerCase();
     const filteredOptionsObj = mergedOptions.reduce(
       (prev, curr) => {
-        const filterMatch = curr[optionLabelName]
-          .toLowerCase()
-          .includes(lowerCasedInputValue);
+        const filterMatch =
+          curr[optionLabelName].toLowerCase().includes(lowerCasedInputValue) &&
+          !selectedOptions.find(
+            (opt) => curr[optionValueName] === opt[optionValueName]
+          );
         const exactMatch =
           curr[optionLabelName].toLowerCase() === lowerCasedInputValue;
         if (filterMatch) {
@@ -595,7 +597,7 @@ const HookFormSelectMulti = <
 
   const filteredOptions = useMemo(
     () => getFilteredOptions(inputValue),
-    [inputValue, mergedOptions]
+    [inputValue, mergedOptions, selectedOptions]
   );
 
   const multiSelectStateChange = ({
@@ -691,7 +693,10 @@ const HookFormSelectMulti = <
         return {
           ...changes,
           isOpen: true,
-          highlightedIndex: state.highlightedIndex!,
+          highlightedIndex:
+            state.highlightedIndex! >= filteredOptions.length - 1 // If it was the last option
+              ? state.highlightedIndex - 1
+              : state.highlightedIndex,
         };
       default:
         return changes;
@@ -710,19 +715,6 @@ const HookFormSelectMulti = <
       case useCombobox.stateChangeTypes.InputKeyDownEnter:
         /* v8 ignore next 3*/
         if (!newSelectedOption) {
-          break;
-        }
-        const selectedOption = selectedOptions.find(
-          (option) =>
-            option[optionValueName] === newSelectedOption[optionValueName]
-        );
-        // They want to remove a selected option
-        if (selectedOption) {
-          const newSelectedOptions = selectedOptions.filter(
-            (option) =>
-              option[optionValueName] !== selectedOption[optionValueName]
-          );
-          setSelectedOptions(newSelectedOptions); // Instead of calling remove, reassign to not have remove function reducer run
           break;
         }
 
@@ -1005,12 +997,6 @@ const HookFormSelectMulti = <
             paddingX={"3"}
             key={option[optionValueName]}
             {...getItemProps({ item: option, index })}
-            aria-selected={
-              !!selectedOptions.find(
-                (selectedOption) =>
-                  selectedOption[optionValueName] === option[optionValueName]
-              )
-            }
           >
             <Box
               as="span"
@@ -1022,10 +1008,6 @@ const HookFormSelectMulti = <
             >
               {option[optionLabelName]}
             </Box>
-            {!!selectedOptions.find(
-              (selectedOption) =>
-                selectedOption[optionValueName] === option[optionValueName]
-            ) && <FaCheck />}
           </Box>
         ))}
       </PopoverContent>

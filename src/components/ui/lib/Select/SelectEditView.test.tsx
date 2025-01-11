@@ -151,15 +151,7 @@ describe("Select/EditView", () => {
         id: "OPTION 3",
       },
     ]);
-    expect(screen.getAllByRole("option").length).toBe(2);
-
-    const option3 = screen.getByRole("option", { selected: true });
-    expect(option3.textContent === "Option 3");
-
-    await userEvent.click(screen.getByText("Option 1"));
-    await waitFor(() => {
-      expect(screen.getAllByRole("option", { selected: true }).length).toBe(2);
-    });
+    expect(screen.getByText("OPTION 3")).toBeInTheDocument();
   });
 
   it("SelectEditField single select can choose option", async () => {
@@ -339,9 +331,7 @@ describe("Select/EditView", () => {
           value: "option 3",
         },
       ]);
-      expect(screen.getAllByRole("option").length).toBe(3);
-      const option3 = screen.getByRole("option", { selected: true });
-      expect(option3.textContent === "option 3");
+      expect(screen.getByText("Option 3")).toBeInTheDocument();
     });
   });
 
@@ -498,50 +488,6 @@ describe("Select/EditView", () => {
     });
   });
 
-  it("SelectEditField multi clicking on selected option in dropdown should remove that selected option", async () => {
-    const mockOnChange = vi.fn();
-    render(
-      <Provider>
-        <SelectEditViewWrapper
-          {...selectFieldProps}
-          isMulti={true}
-          onChange={mockOnChange}
-        />
-      </Provider>
-    );
-    const comboboxInput = screen.getByRole("combobox");
-
-    await userEvent.click(comboboxInput);
-    const option1 = screen.getAllByRole("option")[0];
-    const option2 = screen.getAllByRole("option")[1];
-    await userEvent.click(option1);
-    await userEvent.click(option2);
-
-    expect(mockOnChange).toHaveBeenCalled();
-    expect(mockOnChange).toHaveBeenCalledWith([
-      {
-        label: "Option 1",
-        value: "1",
-      },
-      {
-        label: "Option 2",
-        value: "2",
-      },
-    ]);
-
-    await userEvent.click(option1);
-
-    await waitFor(() => {
-      expect(mockOnChange).toHaveBeenCalledWith([
-        {
-          label: "Option 2",
-          value: "2",
-        },
-      ]);
-      expect(screen.queryByLabelText("Remove Option 1")).toBeNull();
-    });
-  });
-
   it("SelectEditField multi backspace in input should remove selectedOptions one by one", async () => {
     const mockOnChange = vi.fn();
     render(
@@ -557,42 +503,14 @@ describe("Select/EditView", () => {
     const comboboxInput = screen.getByRole("combobox");
 
     await userEvent.click(comboboxInput);
+    screen.debug();
     expect(screen.getAllByRole("option").length).toBe(2);
 
     await userEvent.click(screen.getByText("Option 2"));
-    expect(screen.getAllByRole("option", { selected: true }).length).toBe(1);
+    expect(screen.getAllByRole("option").length).toBe(1);
     await userEvent.keyboard("{Backspace}");
     await waitFor(() => {
-      expect(screen.queryAllByRole("option", { selected: true }).length).toBe(
-        0
-      );
-    });
-  });
-
-  it("SelectEditField multi backspace in input should remove selectedOptions one by one", async () => {
-    const mockOnChange = vi.fn();
-    render(
-      <Provider>
-        <SelectEditViewWrapper
-          {...selectFieldProps}
-          isMulti={true}
-          onChange={mockOnChange}
-        />
-      </Provider>
-    );
-    expect(screen.getByText("Choose an option")).toBeInTheDocument();
-    const comboboxInput = screen.getByRole("combobox");
-
-    await userEvent.click(comboboxInput);
-    expect(screen.getAllByRole("option").length).toBe(2);
-
-    await userEvent.click(screen.getByText("Option 2"));
-    expect(screen.getAllByRole("option", { selected: true }).length).toBe(1);
-    await userEvent.keyboard("{Backspace}");
-    await waitFor(() => {
-      expect(screen.queryAllByRole("option", { selected: true }).length).toBe(
-        0
-      );
+      expect(screen.getAllByRole("option").length).toBe(2);
     });
   });
 

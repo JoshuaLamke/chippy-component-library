@@ -34,7 +34,7 @@ const formSchema = z.object({
     )
     .passthrough(),
   text: z.string().min(1, textErrorMessage),
-  number: z.number(),
+  number: z.number().or(z.nan()),
   maskText: z.string().length(9),
   ssnText: z.string().length(9),
   phoneNumberText: z.string().length(10),
@@ -50,7 +50,7 @@ function App() {
         { name: "React", id: "react", val2: "1" },
         { name: "Vue", id: "vue", val2: "2" },
       ],
-      frameworkSingle: undefined,
+      frameworkSingle: { name: "React", id: "react", val2: "1" },
       text: "default",
       number: 123,
       maskText: "123456789",
