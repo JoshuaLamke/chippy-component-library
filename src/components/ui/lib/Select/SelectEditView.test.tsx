@@ -503,7 +503,6 @@ describe("Select/EditView", () => {
     const comboboxInput = screen.getByRole("combobox");
 
     await userEvent.click(comboboxInput);
-    screen.debug();
     expect(screen.getAllByRole("option").length).toBe(2);
 
     await userEvent.click(screen.getByText("Option 2"));
