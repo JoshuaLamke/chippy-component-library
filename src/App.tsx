@@ -9,6 +9,7 @@ import MaskedTextInputField from "./components/ui/lib/MaskedTextInput/Field";
 import SSNInputField from "./components/ui/lib/MaskedTextInput/SSNInput/Field";
 import PhoneNumberInputField from "./components/ui/lib/MaskedTextInput/PhoneNumberInput/Field";
 import { useState } from "react";
+import RadioInputField from "./components/ui/lib/RadioInput/Field";
 
 const selectErrorMessage = { message: "Must add at least one option" };
 const textErrorMessage = { message: "Must add text." };
@@ -25,6 +26,15 @@ const formSchema = z.object({
     .array()
     .min(1, selectErrorMessage),
   frameworkSingle: z
+    .object(
+      {
+        name: z.string(),
+        id: z.string(),
+      },
+      selectErrorMessage
+    )
+    .passthrough(),
+  frameworkRadio: z
     .object(
       {
         name: z.string(),
@@ -51,6 +61,7 @@ function App() {
         { name: "Vue", id: "vue", val2: "2" },
       ],
       frameworkSingle: { name: "React", id: "react", val2: "1" },
+      frameworkRadio: undefined,
       text: "default",
       number: 123,
       maskText: "123456789",
@@ -256,6 +267,25 @@ function App() {
                 required={true}
                 helperText="This is helper text"
                 size={inputSize}
+              />
+            </GridItem>
+            <GridItem colSpan={1}>
+              <RadioInputField<keyof FormValues, "id", "name">
+                required={true}
+                name="frameworkRadio"
+                optionLabelName="name"
+                optionValueName="id"
+                helperText="This is helper text"
+                options={[
+                  { name: "React", id: "react", val2: "1" },
+                  { name: "Vue", id: "vue", val2: "2" },
+                  { name: "Angular", id: "angular", val2: "3" },
+                ]}
+                label={"Framework"}
+                onChange={(v) => console.log(v)}
+                onBlur={() => console.log("blur")}
+                state={formState}
+                size={inputSize as any}
               />
             </GridItem>
             <GridItem

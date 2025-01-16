@@ -520,6 +520,37 @@ const HookFormSelectSingle = <
   );
 };
 
+export const calculateContainerBorderStyles = (
+  isInvalid: boolean,
+  isInputFocused: boolean
+) => {
+  if (isInvalid) {
+    return {
+      borderWidth: "thin",
+      borderColor: "border.error",
+      ...(isInputFocused
+        ? {
+            outlineColor: "border.error",
+            outlineWidth: "thin",
+            outlineStyle: "solid",
+          }
+        : undefined),
+    };
+  } else if (isInputFocused) {
+    return {
+      borderWidth: "thin",
+      borderColor: "border.inverted",
+      outlineColor: "colorPalette.focusRing",
+      outlineWidth: "thin",
+      outlineStyle: "solid",
+    };
+  } else {
+    return {
+      borderWidth: "thin",
+    };
+  }
+};
+
 const HookFormSelectMulti = <
   FormKeyNames extends string = string,
   OptionValueName extends string = "value",
@@ -780,34 +811,6 @@ const HookFormSelectMulti = <
     onChange?.(selectedOptions);
   }, [selectedOptions]);
 
-  const calculateContainerBorderStyles = () => {
-    if (isInvalid) {
-      return {
-        borderWidth: "thin",
-        borderColor: "border.error",
-        ...(isInputFocused
-          ? {
-              outlineColor: "border.error",
-              outlineWidth: "thin",
-              outlineStyle: "solid",
-            }
-          : undefined),
-      };
-    } else if (isInputFocused) {
-      return {
-        borderWidth: "thin",
-        borderColor: "border",
-        outlineColor: "colorPalette.focusRing",
-        outlineWidth: "thin",
-        outlineStyle: "solid",
-      };
-    } else {
-      return {
-        borderWidth: "thin",
-      };
-    }
-  };
-
   return (
     <PopoverRoot
       open={isOpen}
@@ -821,7 +824,7 @@ const HookFormSelectMulti = <
           display={"flex"}
           rounded={"sm"}
           minHeight={sizeMap[size ?? "md"]["totalHeight"]}
-          {...calculateContainerBorderStyles()}
+          {...calculateContainerBorderStyles(isInvalid, isInputFocused)}
           width={"full"}
           alignItems={"center"}
           paddingStart={"2"}

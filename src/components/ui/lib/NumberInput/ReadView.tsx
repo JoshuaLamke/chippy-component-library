@@ -15,7 +15,7 @@ const NumberInputReadView = ({
   return (
     <Field label={label}>
       <Box color={"gray.fg"}>
-        {sanitizeNumber(inputValue) ?? noValueMessage ?? "None"}
+        {sanitizeNumber(inputValue) || noValueMessage || "None"}
       </Box>
     </Field>
   );
